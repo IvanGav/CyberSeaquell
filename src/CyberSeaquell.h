@@ -1,5 +1,6 @@
 #pragma once
 #include "VK.h"
+#include "Win32.h"
 #include "DynamicVertexBuffer.h"
 #include "TextRenderer.h"
 #include "WASAPIInterface.h"
@@ -14,6 +15,29 @@ U64 prevFrameTime;
 U64 frameTime;
 F64 deltaTime;
 F64 totalTime;
+
+HANDLE audioThread;
+F64 audioPlaybackTime;
+B32 audioThreadShouldShutdown;
+
+void fill_audio_buffer(F32* buffer, U32 numSamples, U32 numChannels, F32 timeAmount) {
+	for (U32 i = 0; i < numSamples; i++) {
+		F64 t = audioPlaybackTime + F64(i) / F64(numSamples) * F64(timeAmount);
+		F32 val = sinf32(fractf64(t * 200.0));
+		for (U32 j = 0; j < numChannels; j++) {
+			*buffer++ = val * 0.9F;
+		}
+	}
+	audioPlaybackTime += timeAmount;
+}
+
+DWORD WINAPI audio_thread_func(LPVOID) {
+	WASAPIInterface::init_wasapi(fill_audio_buffer);
+	while (!audioThreadShouldShutdown) {
+		WASAPIInterface::do_audio();
+	}
+	return 0;
+}
 
 void keyboard_callback(Win32::Key key, Win32::ButtonState state) {
 	V2F32 mousePos = Win32::get_mouse();
@@ -88,6 +112,14 @@ void do_frame() {
 }
 
 void run_cyber_seaquell() {
+	audioThread = CreateThread(NULL, 64 * KILOBYTE, audio_thread_func, NULL, 0, NULL);
+	if (audioThread == NULL) {
+		DWORD err = GetLastError();
+		print("Failed to create audio thread, code: ");
+		println_integer(err);
+		return;
+	}
+
 	LARGE_INTEGER perfCounter;
 	if (!QueryPerformanceCounter(&perfCounter)) {
 		abort("Could not get performanceCounter");
@@ -115,6 +147,15 @@ void run_cyber_seaquell() {
 	while (!Win32::windowShouldClose) {
 		Win32::poll_events();
 		do_frame();
+	}
+
+	audioThreadShouldShutdown = true;
+	if (WaitForSingleObject(audioThread, INFINITE) == WAIT_FAILED) {
+		DWORD err = GetLastError();
+		print("Failed to join audio thread, code: ");
+		println_integer(err);
+	} else {
+		CloseHandle(audioThread);
 	}
 
 	UI::destroy_ui();
