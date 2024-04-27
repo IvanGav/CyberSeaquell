@@ -253,6 +253,7 @@ void setCurTerminalLine() {
 
 void newCmdLine() {
     get_cur_file().push_back(get_prompt());
+    ts[curTerminal].history.push_back("");
     //if the last history line is empty, don't make a new empty line, reuse
     if(ts[curTerminal].history[ts[curTerminal].history.size()-1] != "") ts[curTerminal].history.push_back("");
 
