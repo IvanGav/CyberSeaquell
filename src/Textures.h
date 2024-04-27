@@ -34,7 +34,7 @@ Texture fontAtlas;
 Texture uiIncrementLeft;
 Texture uiIncrementRight;
 Texture map[8];
-Texture cam[1];
+Texture cam[5];
 
 ArenaArrayList<Texture*> allTextures;
 ArenaArrayList<VkDeviceMemory> memoryUsed;
