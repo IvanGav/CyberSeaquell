@@ -8,6 +8,7 @@
 #include "SerializeTools.h"
 #include "UI.h"
 #include "PanelUI.h"
+#include "Sounds.h"
 
 
 namespace CyberSeaquell {
@@ -26,11 +27,7 @@ F32* testAudio;
 U32 testAudioLength;
 
 void fill_audio_buffer(F32* buffer, U32 numSamples, U32 numChannels, F32 timeAmount) {
-	for (U32 i = 0; i < numSamples; i++) {
-		for (U32 j = 0; j < numChannels; j++) {
-			*buffer++ = 0;
-		}
-	}
+	Sounds::mix_into_buffer(buffer, numSamples, numChannels, timeAmount);
 	audioPlaybackTime += timeAmount;
 }
 
@@ -52,6 +49,9 @@ void mouse_callback(Win32::MouseButton button, Win32::MouseValue state) {
 }
 
 void do_frame() {
+	if (frameNumber % 200 == 0) {
+		Sounds::play_sound(Sounds::seagulls);
+	}
 	frameNumber++;
 	LARGE_INTEGER perfCounter;
 	if (!QueryPerformanceCounter(&perfCounter)) {
@@ -115,6 +115,7 @@ void do_frame() {
 }
 
 void run_cyber_seaquell() {
+	Sounds::load_sources();
 	audioThread = CreateThread(NULL, 64 * KILOBYTE, audio_thread_func, NULL, 0, NULL);
 	if (audioThread == NULL) {
 		DWORD err = GetLastError();

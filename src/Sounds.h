@@ -26,7 +26,7 @@ void load_source(AudioSource* srcOut, const char* path) {
 	if (dataLength > 0) {
 		F32* data = globalArena.alloc<F32>(dataLength);
 		for (U32 i = 0; i < dataLength; i++) {
-			data[i] = F32(output[i * 2]) / 65535.0F;
+			data[i] = F32(output[i * channels]) / 65535.0F;
 		}
 		free(output);
 		*srcOut = AudioSource{ data, U32(dataLength), U32(sampleRate), F32(dataLength) / F32(sampleRate)};
@@ -35,15 +35,18 @@ void load_source(AudioSource* srcOut, const char* path) {
 	}
 }
 
-AudioSource testAudio;
-AudioSource testAudio2;
+AudioSource bees;
+AudioSource clickPen;
+AudioSource seagulls;
 
 void load_sources() {
-	load_source(&testAudio, "./resources/sounds/seagulls.ogg");
+	load_source(&bees, "./resources/sounds/bees-swarming.ogg");
+	load_source(&clickPen, "./resources/sounds/click-pen.ogg");
+	load_source(&seagulls, "./resources/sounds/seagulls.ogg");
 }
 
 void play_sound(AudioSource& src) {
-	instances.push_back(AudioInstance{  });
+	instances.push_back(AudioInstance{ &src, CyberSeaquell::audioPlaybackTime });
 }
 
 void mix_into_buffer(F32* buffer, U32 numSamples, U32 numChannels, F32 timeAmount) {
@@ -56,10 +59,11 @@ void mix_into_buffer(F32* buffer, U32 numSamples, U32 numChannels, F32 timeAmoun
 		} else {
 			F32* buf = buffer;
 			for (U32 j = 0; j < numSamples; j++) {
-				F64 t = (CyberSeaquell::audioPlaybackTime - inst.startTime) * F64(inst.src->sampleRate);
+				F64 dt = F64(j) / F64(numSamples) * F64(timeAmount);
+				F64 t = (CyberSeaquell::audioPlaybackTime + dt - inst.startTime) * F64(inst.src->sampleRate);
 				F32 val = inst.src->data[U32(t)];
 				for (U32 k = 0; k < numChannels; k++) {
-					*buf++ = val * 1.0F;
+					*buf++ += val;
 				}
 			}
 		}
