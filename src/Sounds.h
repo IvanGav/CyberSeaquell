@@ -38,11 +38,14 @@ void load_source(AudioSource* srcOut, const char* path) {
 AudioSource bees;
 AudioSource clickPen;
 AudioSource seagulls;
+AudioSource bg;
 
 void load_sources() {
 	load_source(&bees, "./resources/sounds/bees-swarming.ogg");
 	load_source(&clickPen, "./resources/sounds/click-pen.ogg");
 	load_source(&seagulls, "./resources/sounds/seagulls.ogg");
+	load_source(&bg, "./resources/sounds/bg.ogg");
+
 }
 
 void play_sound(AudioSource& src) {

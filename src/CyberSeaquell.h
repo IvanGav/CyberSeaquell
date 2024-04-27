@@ -145,9 +145,12 @@ void run_cyber_seaquell() {
 
 	Win32::show_window();
 
+	Sounds::play_sound(Sounds::bg);
+
 	while (!Win32::windowShouldClose) {
 		Win32::poll_events();
 		do_frame();
+		
 	}
 
 	audioThreadShouldShutdown = true;
