@@ -7,6 +7,8 @@
 #include "SerializeTools.h"
 #include "UI.h"
 #include "PanelUI.h"
+#include "stb_vorbis.h"
+
 
 namespace CyberSeaquell {
 
@@ -20,10 +22,13 @@ HANDLE audioThread;
 F64 audioPlaybackTime;
 B32 audioThreadShouldShutdown;
 
+F32* testAudio;
+U32 testAudioLength;
+
 void fill_audio_buffer(F32* buffer, U32 numSamples, U32 numChannels, F32 timeAmount) {
 	for (U32 i = 0; i < numSamples; i++) {
 		F64 t = audioPlaybackTime + F64(i) / F64(numSamples) * F64(timeAmount);
-		F32 val = sinf32(fractf64(t * 200.0));
+		F32 val = testAudio[U32(t * 44100.0) % testAudioLength];
 		for (U32 j = 0; j < numChannels; j++) {
 			*buffer++ = val * 0.9F;
 		}
@@ -32,6 +37,14 @@ void fill_audio_buffer(F32* buffer, U32 numSamples, U32 numChannels, F32 timeAmo
 }
 
 DWORD WINAPI audio_thread_func(LPVOID) {
+	int channels, sampleRate;
+	short* output;
+	int dataLength = stb_vorbis_decode_filename("./resources/sounds/seagulls.ogg", &channels, &sampleRate, &output);
+	testAudioLength = dataLength;
+	testAudio = globalArena.alloc<F32>(dataLength);
+	for (U32 i = 0; i < dataLength; i++) {
+		testAudio[i] = F32(output[i * 2]) / 65535.0F;
+	}
 	WASAPIInterface::init_wasapi(fill_audio_buffer);
 	while (!audioThreadShouldShutdown) {
 		WASAPIInterface::do_audio();
