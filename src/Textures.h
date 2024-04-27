@@ -33,6 +33,7 @@ Texture simpleWhite;
 Texture fontAtlas;
 Texture uiIncrementLeft;
 Texture uiIncrementRight;
+Texture map;
 
 ArenaArrayList<Texture*> allTextures;
 ArenaArrayList<VkDeviceMemory> memoryUsed;
@@ -189,6 +190,7 @@ void load_all() {
 	create_texture(&simpleWhite, hardcodedTextureData, 16, 16, TEXTURE_FORMAT_RGBA_U8, TEXTURE_TYPE_COLOR);
 	load_png(&uiIncrementLeft, "resources/textures/ui_increment_left.png"sa);
 	load_png(&uiIncrementRight, "resources/textures/ui_increment_right.png"sa);
+	load_png(&map, "resources/textures/new_map.png"sa);
 	load_msdf(&fontAtlas, "resources/textures/font.ddf"sa);
 }
 

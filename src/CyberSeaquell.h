@@ -5,6 +5,7 @@
 #include "WASAPIInterface.h"
 #include "SerializeTools.h"
 #include "UI.h"
+#include "PanelUI.h"
 
 namespace CyberSeaquell {
 
@@ -107,6 +108,7 @@ void run_cyber_seaquell() {
 	}
 
 	UI::init_ui();
+	PanelUI::init();
 
 	Win32::show_window();
 
