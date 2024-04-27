@@ -354,7 +354,7 @@ void insert_char(char c) {
         if(rightmost()) {
             ts[curTerminal].history[editingHistory].push_back(c);
         } else {
-            ts[curTerminal].history[editingHistory].insert(curCursorX, 1, c);
+            ts[curTerminal].history[editingHistory].insert(curCursorX-2, 1, c);
         }
         setCurTerminalLine();
     } else {
@@ -373,7 +373,7 @@ void backspace_key() {
         //terminal
         file& f = get_cur_file();
         if(curCursorX > 2) {
-            ts[curTerminal].history[editingHistory].erase(curCursorX, 1);
+            ts[curTerminal].history[editingHistory].erase(curCursorX-2, 1);
             left_arrow();
         }
         setCurTerminalLine();
