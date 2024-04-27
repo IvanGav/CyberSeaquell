@@ -111,7 +111,9 @@ void interpret_next(SeagullVirus& virus) {
 		}
 		break;
 	case LOG:
-		virus.logFile->push_back(std::to_string(virus.registerFile[data & 7]));
+		if (virus.logFile != nullptr) {
+			virus.logFile->push_back(std::to_string(virus.registerFile[data & 7]));
+		}
 		break;
 	default: virus.active = false; break;
 	}

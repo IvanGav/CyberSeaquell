@@ -299,8 +299,10 @@ void terminals_init() {
     get_cur_file().push_back("POP pop from stack");
     create_file("primeNumbers.seag");
     curFile = 3;
-    create_file("beaverStats.txt");
+    create_file("optional.log");
     curFile = 4;
+    create_file("beaverStats.txt");
+    curFile = 5;
     get_cur_file()[0] = "Beavers used to live in almost every stream in North America";
     get_cur_file().push_back("and numbered in the many millions");
     get_cur_file().push_back("");
@@ -382,7 +384,7 @@ bool interpret_command(std::string cmd) {
 
                 f.push_back("  zgull <file>");
 
-                f.push_back("  exec <code_file> <log_file>");
+                f.push_back("  exec <code_file> [<log_file>]");
 
                 f.push_back("  exec kill");
 
@@ -416,7 +418,7 @@ bool interpret_command(std::string cmd) {
                 f.push_back("  zgull <file>");
                 f.push_back("    open a given file in zgull, the best text editor");
 
-                f.push_back("  exec <code_file> <log_file>");
+                f.push_back("  exec <code_file> [<log_file>]");
                 f.push_back("    compile and execute a program in code_file, which will log (if any) to log_file");
 
                 f.push_back("  exec kill");
@@ -469,8 +471,8 @@ bool interpret_command(std::string cmd) {
                         break;
                     }
                 }
-                if (code == nullptr || log == nullptr) {
-                    get_cur_file().push_back("  At least one of given files is invalid");
+                if (code == nullptr) {
+                    get_cur_file().push_back("  The source code file doesn't exist.");
                 }
                 compileAndLoad(code, log);
             }
