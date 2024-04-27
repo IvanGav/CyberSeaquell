@@ -478,7 +478,8 @@ void init() {
 			return ACTION_HANDLED;
 		}
 		if (terminalActive && comm.keyPressed) {
-			Sounds::play_sound(Sounds::clickPen);
+			int num = rand() % 7;
+			Sounds::play_sound(*Sounds::keyboard[num]);
 			if (type_char(comm.keyPressed, comm.charTyped)) {
 				terminalActive = false;
 			}
