@@ -3,6 +3,7 @@
 #include "UI.h"
 #include "terminal/terminal.h"
 #include "CyberSeaquell_decl.h"
+#include "Sounds.h"
 
 namespace PanelUI {
 struct Panel;
@@ -439,6 +440,7 @@ void init() {
 			return ACTION_HANDLED;
 		}
 		if (terminalActive && comm.keyPressed) {
+			Sounds::play_sound(Sounds::clickPen);
 			if (type_char(comm.keyPressed, comm.charTyped)) {
 				terminalActive = false;
 			}
@@ -455,12 +457,14 @@ void init() {
 			return ACTION_HANDLED;
 		}
 		if (comm.leftClicked) {
+			
 			V2F32 mouseRelative = (comm.mousePos - box->computedOffset - box->contentOffset) / box->contentScale;
 			if (terminalActive) {
 				I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / terminalTextHeight);
 				I32 offset = get_offset(heightInChars);
 				click_at(I32(mouseRelative.x / TextRenderer::string_size_x("a"sa, terminalTextHeight) + 0.5F), I32(mouseRelative.y / terminalTextHeight) + offset);
 			} else if(box->userData[3] != -1) {
+				Sounds::play_sound(Sounds::bees);
 				F32 camWidth = 1920.0F;
 				F32 camHeight = 1080.0F;
 				F32 areaWidth = comm.renderArea.maxX - comm.renderArea.minX;
