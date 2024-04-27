@@ -195,6 +195,9 @@ ArenaArrayList<Bee> activeBees;
 
 U32 cameraIndices[9];
 
+U32 passcodeBuffer[4];
+U32 passcodeBufferIndex;
+
 void init() {
 	using namespace UI;
 	Panel* panel = alloc_panel();
@@ -224,10 +227,26 @@ void init() {
 				(cams[8] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 8; }).unsafeBox)->contentOffset = V2F32{ 969.0F, 839.0F } *0.5F;
 
 
-				(terminals[0] = button(Textures::terminal, [](Box* b) {  }).unsafeBox)->contentOffset = V2F32{ 1107.0F, 152.0F } *0.5F;
-				(terminals[1] = button(Textures::terminal, [](Box* b) {  }).unsafeBox)->contentOffset = V2F32{ 856.0F, 254.0F } *0.5F;
-				(terminals[2] = button(Textures::terminal, [](Box* b) {  }).unsafeBox)->contentOffset = V2F32{ 798.0F, 588.0F } *0.5F;
-				(terminals[3] = button(Textures::terminal, [](Box* b) {  }).unsafeBox)->contentOffset = V2F32{ 749.0F, 630.0F } *0.5F;
+				(terminals[0] = button(Textures::terminal, [](Box* b) { 
+					termBox->userData[3] = -1;
+					open_terminal(0);
+					terminalActive = true;
+				}).unsafeBox)->contentOffset = V2F32{ 1107.0F, 152.0F } *0.5F;
+				(terminals[1] = button(Textures::terminal, [](Box* b) { 
+					termBox->userData[3] = -1;
+					open_terminal(1);
+					terminalActive = true;
+				}).unsafeBox)->contentOffset = V2F32{ 856.0F, 254.0F } *0.5F;
+				(terminals[2] = button(Textures::terminal, [](Box* b) { 
+					termBox->userData[3] = -1;
+					open_terminal(2);
+					terminalActive = true;
+				}).unsafeBox)->contentOffset = V2F32{ 798.0F, 588.0F } *0.5F;
+				(terminals[3] = button(Textures::terminal, [](Box* b) { 
+					termBox->userData[3] = -1;
+					open_terminal(3);
+					terminalActive = true;
+				}).unsafeBox)->contentOffset = V2F32{ 749.0F, 630.0F } *0.5F;
 			}
 			
 			UI_SIZE((V2F32{ 1920.0F, 1080.0F } *0.5F))
@@ -283,6 +302,80 @@ void init() {
 								cams[1]->flags &= ~BOX_FLAG_DISABLED;
 								minimap->backgroundTexture = &Textures::map[1];
 							}
+						} break;
+						case 2: {
+							if (rng_contains_point(Rng2F32{ 1019, 120, 1100, 208 }, clickPos)) {
+								cams[2]->flags &= ~BOX_FLAG_DISABLED;
+							}
+						} break;
+						case 3: {
+							if (rng_contains_point(Rng2F32{ 1178, 249, 1349, 594 }, clickPos)) {
+								cams[3]->flags &= ~BOX_FLAG_DISABLED;
+								minimap->backgroundTexture = &Textures::map[2];
+							}
+						} break;
+						case 4: {
+							if (rng_contains_point(Rng2F32{ 477, 459, 514, 489 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 1;
+							} else if (rng_contains_point(Rng2F32{ 517, 459, 546, 486 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 2;
+							} else if (rng_contains_point(Rng2F32{ 548, 457, 577, 483 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 3;
+							} else if (rng_contains_point(Rng2F32{ 581, 453, 610, 479 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 0;
+							} else if (rng_contains_point(Rng2F32{ 484, 494, 515, 517 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 4;
+							} else if (rng_contains_point(Rng2F32{ 520, 492, 549, 515 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 5;
+							} else if (rng_contains_point(Rng2F32{ 551, 489, 579, 513 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 6;
+							} else if (rng_contains_point(Rng2F32{ 486, 527, 519, 581 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 7;
+							} else if (rng_contains_point(Rng2F32{ 522, 524, 551, 579 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 8;
+							} else if (rng_contains_point(Rng2F32{ 554, 520, 583, 577 }, clickPos)) {
+								passcodeBuffer[(passcodeBufferIndex++) & 3] = 9;
+ 							} else if (rng_contains_point(Rng2F32{ 585, 486, 613, 509 }, clickPos)) {
+								if (passcodeBuffer[(passcodeBufferIndex) & 3] == 1 &&
+									passcodeBuffer[(passcodeBufferIndex + 1) & 3] == 2 &&
+									passcodeBuffer[(passcodeBufferIndex + 2) & 3] == 3 &&
+									passcodeBuffer[(passcodeBufferIndex + 3) & 3] == 4) {
+
+									cameraIndices[1] = 3;
+								}
+							}
+						} break;
+						case 5: {
+							if (rng_contains_point(Rng2F32{ 518, 340, 661, 463 }, clickPos)) {
+								cams[4]->flags &= ~BOX_FLAG_DISABLED;
+								minimap->backgroundTexture = &Textures::map[3];
+							}
+						} break;
+						case 6: {
+							if (rng_contains_point(Rng2F32{ 934, 516, 1074, 613 }, clickPos)) {
+								terminals[0]->flags &= ~BOX_FLAG_DISABLED;
+							}
+						} break;
+						case 7: {
+
+						} break;
+						case 8: {
+
+						} break;
+						case 9: {
+
+						} break;
+						case 10: {
+
+						} break;
+						case 11: {
+
+						} break;
+						case 12: {
+
+						} break;
+						case 13: {
+
 						} break;
 						}
 						amountToRemove = i + 1;
