@@ -2,6 +2,8 @@
 #include <vector>
 #include "../Win32.h"
 
+//TODO: ignore leading spaces
+
 typedef std::vector<std::string> file;
 
 struct Terminal {
@@ -33,6 +35,7 @@ void down_arrow();
 void left_arrow();
 void right_arrow();
 void backspace_key();
+void delete_key();
 bool enter_key();
 void insert_char(char c);
 bool interpret_typed_character(Win32::Key charCode, char c);
@@ -236,38 +239,74 @@ bool interpret_command(std::string cmd) {
     int cmdsize;
     seek(cmd, from, cmdsize);
     if ("help"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-        // int argSize = seek(cmd, from);
-        // if(strncmp("-please", cmd.c_str(), cmdsize))
         file& f = get_cur_file();
+        int argSize; int argAt = seek(cmd, from, argSize);
+        if ("-please"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            f.push_back("  help [-please]");
 
-        f.push_back("  help <-please>");
-        f.push_back("    see this message");
+            f.push_back("  exit");
 
-        f.push_back("  clear");
-        f.push_back("    clear all previous commands from the screen");
+            f.push_back("  clear");
 
-        f.push_back("  ls <dir>");
-        f.push_back("    list all files in a specified directory (this directory if not specified)");
+            f.push_back("  ls [dir]");
 
-        f.push_back("  cd dir");
-        f.push_back("    change directory to a specified directory");
+            f.push_back("  cd <dir>");
 
-        f.push_back("  pwd");
-        f.push_back("    print working directory");
+            f.push_back("  pwd");
 
-        f.push_back("  zgull file");
-        f.push_back("    open a given file in zgull");
+            f.push_back("  zgull <file>");
+
+            f.push_back("  lscam");
+
+            f.push_back("  connect camera <cameraID>");
+
+            f.push_back("  c> enable camera");
+        } else {
+            f.push_back("  help [-please]");
+            f.push_back("    see this message");
+
+            f.push_back("  exit");
+            f.push_back("    terminate current terminal session");
+
+            f.push_back("  clear");
+            f.push_back("    clear all previous commands from the screen");
+
+            f.push_back("  ls [dir]");
+            f.push_back("    list all files in a specified directory (this directory if not specified)");
+
+            f.push_back("  cd <dir>");
+            f.push_back("    change directory to a specified directory");
+
+            f.push_back("  pwd");
+            f.push_back("    print working directory");
+
+            f.push_back("  zgull <file>");
+            f.push_back("    open a given file in zgull, the best text editor");
+
+            f.push_back("  lscam");
+            f.push_back("   list all available cameras");
+
+            f.push_back("  connect camera <cameraID>");
+            f.push_back("   securely connect to a camera to change its settings");
+
+            f.push_back("  c> enable camera");
+            f.push_back("    when connected to a camera, enable it (if it's currently disabled)");
+        }
     } else if ("clear"sa == StrA{ cmd.c_str(), U64(cmdsize) } ) {
         get_cur_file().clear();
-    } else if ("ls"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+    }
+    else if ("ls"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
         get_cur_file().push_back("  .");
         get_cur_file().push_back("  ..");
-        for(int i = 1; i < ts[curTerminal].files.size(); i++) {
+        for (int i = 1; i < ts[curTerminal].files.size(); i++) {
             get_cur_file().push_back("  " + ts[curTerminal].names[i]);
         }
-    // } else if(strncmp("cd", cmd.c_str(), cmdsize)) {
-    //     int argSize = seek(cmd, from);
-    //     if(strncmp(".", cmd.c_str(), cmdsize));
+    } else if ("cd"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+        int argSize; int startAt = seek(cmd, from, argSize);
+        if (cmd[startAt] == '.' && cmd.size() == 1);
+        else {
+            get_cur_file().push_back("  ERROR: Permussion denied");
+        }
     } else if ("pwd"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
         get_cur_file().push_back("  C:/cryptocom/central facility/ehtp1nfo34-terminal" + std::to_string(curTerminal));
     } else if ("zgull"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
@@ -324,7 +363,7 @@ int seek(std::string& str, int& from, int& len) {
 
 //return true if cursor is currently the rightmost of the line
 bool rightmost() {
-    return get_cur_file().size() == curCursorX;
+    return get_cur_file()[curCursorY].size() == curCursorX;
 }
 
 //when in a terminal, set the latest line to be the correct selected (history) command
@@ -360,7 +399,9 @@ bool interpret_typed_character(Win32::Key charCode, char c) {
         right_arrow();
     } else if(charCode == Win32::KEY_BACKSPACE) {
         backspace_key();
-    } else if(charCode == Win32::KEY_RETURN) {
+    } else if (charCode == Win32::KEY_DELETE) {
+        delete_key();
+    } else if (charCode == Win32::KEY_RETURN) {
         return enter_key();
     } else if(charCode == Win32::KEY_ESC) {
         if(curFile != 0) {
@@ -380,12 +421,17 @@ void up_arrow() {
         if(editingHistory == 0) return;
         editingHistory--;
         setCurTerminalLine();
+        curCursorX = get_cur_file()[curCursorY].size();
     } else {
         //in editor
-        if(curCursorY == 0) return;
+        if (curCursorY == 0) {
+            savedCursorX = max(curCursorX, savedCursorX); 
+            curCursorX = 0; 
+            return; 
+        }
         curCursorY--;
         curCursorX = max(curCursorX, savedCursorX);
-        if(get_cur_file()[curCursorY].size() < curCursorX) {
+        if (get_cur_file()[curCursorY].size() < curCursorX) {
             //bad, save
             savedCursorX = max(curCursorX, savedCursorX);
             curCursorX = get_cur_file()[curCursorY].size();
@@ -399,16 +445,17 @@ void down_arrow() {
         if(editingHistory == ts[curTerminal].history.size()-1) return;
         editingHistory++;
         setCurTerminalLine();
+        curCursorX = get_cur_file()[curCursorY].size();
     } else {
         //in editor
-        if(curCursorY == get_cur_file().size()-1) return;
+        if (curCursorY == get_cur_file().size() - 1) { curCursorX = get_cur_file()[curCursorY].size(); return; }
         curCursorY++;
-    }
-    curCursorX = max(curCursorX, savedCursorX);
-    if (get_cur_file()[curCursorY].size() < curCursorX) {
-        //bad, save
-        savedCursorX = max(curCursorX, savedCursorX);
-        curCursorX = get_cur_file()[curCursorY].size();
+        curCursorX = max(curCursorX, savedCursorX);
+        if (get_cur_file()[curCursorY].size() < curCursorX) {
+            //bad, save
+            savedCursorX = max(curCursorX, savedCursorX);
+            curCursorX = get_cur_file()[curCursorY].size();
+        }
     }
 }
 
@@ -464,7 +511,32 @@ void backspace_key() {
             f[curCursorY].erase(curCursorX-1, 1);
             left_arrow();
         } else {
-            //merge 2 lines
+            if (curCursorY == 0) return;
+            curCursorY--;
+            curCursorX = f[curCursorY].size();
+            f[curCursorY].append(f[curCursorY+1]);
+            f.erase(f.begin() + curCursorY + 1);
+        }
+    }
+}
+
+void delete_key() {
+    if (curFile == 0) {
+        //terminal
+        file& f = get_cur_file();
+        if (rightmost()) return;
+        ts[curTerminal].history[editingHistory].erase(curCursorX - 2, 1);
+        setCurTerminalLine();
+    }
+    else {
+        //editor
+        file& f = get_cur_file();
+        if (!rightmost()) {
+            f[curCursorY].erase(curCursorX, 1);
+        } else {
+            if (curCursorY == get_cur_file().size()-1) return;
+            f[curCursorY].append(f[curCursorY + 1]);
+            f.erase(f.begin() + curCursorY + 1);
         }
     }
 }
