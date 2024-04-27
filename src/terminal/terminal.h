@@ -45,11 +45,19 @@ void click_at(int x, int y) {
     return;
 }
 
+int get_offset(int height) {
+    return height - cursor_y();
+}
+
 /*
     Internal
 */
 
 std::vector<std::vector<file>> ts; //terminals
+//ts[n][0] is the actual terminal with its history; other indicies after 0 are the actual files
+
+int cur_terminal;
+int cur_file;
 
 //given a command, interpret it and return a result
 //  if 'type' is CMD_RETURN_TYPE_PRINT, then 'str' to print to the terminal
