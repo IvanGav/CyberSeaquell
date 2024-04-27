@@ -180,10 +180,20 @@ void free_panel(Panel* panel) {
 }
 
 UI::Box* termBox;
-UI::Box* cams[8];
+UI::Box* cams[9];
 UI::Box* terminals[4];
+UI::Box* minimap;
 B32 terminalActive;
 const F32 terminalTextHeight = 20.0F;
+
+const F32 beeFlyTime = 1.0F;
+struct Bee {
+	V2F32 clickPos;
+	F64 startTime;
+};
+ArenaArrayList<Bee> activeBees;
+
+U32 cameraIndices[9];
 
 void init() {
 	using namespace UI;
@@ -203,14 +213,15 @@ void init() {
 			UI_FLAGS(defaultFlagsStack.back() | BOX_FLAG_DISABLED)
 			UI_SIZE((V2F32{ 32.0F, 32.0F }))
 			UI_BACKGROUND_COLOR((V4F32{ 1.0F, 1.0F, 1.0F, 1.0F })) {
-				(cams[0] = button(Textures::camRed, [](Box* b) { termBox->userData[3] = Textures::cam[0].index; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 1000.0F } *0.5F;
-				(cams[1] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 762.0F } *0.5F;
-				(cams[2] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1108.0F, 542.0F } *0.5F;
-				(cams[3] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1104.0F, 295.0F } *0.5F;
-				(cams[4] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1510.0F, 160.0F } *0.5F;
-				(cams[5] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1050.0F, 240.0F } *0.5F;
-				(cams[6] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 655.0F, 33.0F } *0.5F;
-				(cams[7] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 758.0F, 379.0F } *0.5F;
+				(cams[0] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 0; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 1000.0F } *0.5F;
+				(cams[1] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 1; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 762.0F } *0.5F;
+				(cams[2] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 2; }).unsafeBox)->contentOffset = V2F32{ 1108.0F, 542.0F } *0.5F;
+				(cams[3] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 3; }).unsafeBox)->contentOffset = V2F32{ 1104.0F, 295.0F } *0.5F;
+				(cams[4] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 4; }).unsafeBox)->contentOffset = V2F32{ 1510.0F, 160.0F } *0.5F;
+				(cams[5] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 5; }).unsafeBox)->contentOffset = V2F32{ 1050.0F, 240.0F } *0.5F;
+				(cams[6] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 6; }).unsafeBox)->contentOffset = V2F32{ 655.0F, 33.0F } *0.5F;
+				(cams[7] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 7; }).unsafeBox)->contentOffset = V2F32{ 758.0F, 379.0F } *0.5F;
+				(cams[8] = button(Textures::camBee, [](Box* b) { termBox->userData[3] = 8; }).unsafeBox)->contentOffset = V2F32{ 969.0F, 839.0F } *0.5F;
 
 
 				(terminals[0] = button(Textures::terminal, [](Box* b) {  }).unsafeBox)->contentOffset = V2F32{ 1107.0F, 152.0F } *0.5F;
@@ -221,11 +232,10 @@ void init() {
 			
 			UI_SIZE((V2F32{ 1920.0F, 1080.0F } *0.5F))
 			UI_BACKGROUND_COLOR((V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }))
-			generic_box().unsafeBox->backgroundTexture = &Textures::map[7];
+			(minimap = generic_box().unsafeBox)->backgroundTexture = &Textures::map[0];
 		}
 	}
 	cams[0]->flags &= ~BOX_FLAG_DISABLED;
-	cams[0]->backgroundTexture = &Textures::camBee;
 	terminals_init();
 	termBox = panel->childB->content.unsafeBox;
 	panel->childB->content.unsafeBox->actionCallback = [](Box* box, UserCommunication& comm) {
@@ -244,7 +254,8 @@ void init() {
 					F32 cursorY = comm.renderArea.minY + F32(cursor_y() - offset) * terminalTextHeight;
 					comm.tessellator->ui_rect2d(cursorX, cursorY, cursorX + 2.0F, cursorY + terminalTextHeight, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
 				}
-			} else if(box->userData[3] != 0) {
+			} else if(box->userData[3] != -1) {
+				U32 camSceneIdx = cameraIndices[box->userData[3]];
 				F32 camWidth = 1920.0F;
 				F32 camHeight = 1080.0F;
 				F32 areaWidth = comm.renderArea.maxX - comm.renderArea.minX;
@@ -255,7 +266,35 @@ void init() {
 				}
 				V2F32 renderMid{ (comm.renderArea.minX + comm.renderArea.maxX) * 0.5F, (comm.renderArea.minY + comm.renderArea.maxY) * 0.5F };
 				V2F32 halfExtent{ camWidth * 0.5F * scale, camHeight * 0.5F * scale };
-				comm.tessellator->ui_rect2d(renderMid.x - halfExtent.x, renderMid.y - halfExtent.y, renderMid.x + halfExtent.x, renderMid.y + halfExtent.y, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, box->userData[3], comm.clipBoxIndex << 16);
+				comm.tessellator->ui_rect2d(renderMid.x - halfExtent.x, renderMid.y - halfExtent.y, renderMid.x + halfExtent.x, renderMid.y + halfExtent.y, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::cam[camSceneIdx].index, comm.clipBoxIndex << 16);
+			
+				U32 amountToRemove = 0;
+				for (U32 i = 0; i < activeBees.size; i++) {
+					if (CyberSeaquell::totalTime - activeBees.data[i].startTime >= beeFlyTime) {
+						V2F32 clickPos = activeBees.data[i].clickPos;
+						switch (camSceneIdx) {
+						case 0: {
+							if (rng_contains_point(Rng2F32{ 964, 444, 1049, 502 }, clickPos)) {
+								cameraIndices[0] = 1;
+							}
+						} break;
+						case 1: {
+							if (rng_contains_point(Rng2F32{ 1188, 250, 1356, 590 }, clickPos)) {
+								cams[1]->flags &= ~BOX_FLAG_DISABLED;
+								minimap->backgroundTexture = &Textures::map[1];
+							}
+						} break;
+						}
+						amountToRemove = i + 1;
+					} else {
+						Textures::bee;
+						V2F32 pos = (activeBees.data[i].clickPos - V2F32{ 1920.0F * 0.5F, 1080.0F * 0.5F }) * scale + renderMid;
+						V2F32 beeHalfExtent = V2F32{ 100.0F, 100.0F } / ((CyberSeaquell::totalTime - activeBees.data[i].startTime) * 20.0F);
+						comm.tessellator->ui_rect2d(pos.x - beeHalfExtent.x, pos.y - beeHalfExtent.y, pos.x + beeHalfExtent.x, pos.y + beeHalfExtent.y, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::bee.index, comm.clipBoxIndex << 16);
+					}
+				}
+				memcpy(activeBees.data, activeBees.data + amountToRemove, (activeBees.size - amountToRemove) * sizeof(Bee));
+				activeBees.resize(activeBees.size - amountToRemove);
 			}
 			return ACTION_HANDLED;
 		}
@@ -270,18 +309,40 @@ void init() {
 			return ACTION_HANDLED;
 		}
 		if (comm.leftClicked) {
+			V2F32 mouseRelative = (comm.mousePos - box->computedOffset - box->contentOffset) / box->contentScale;
 			if (terminalActive) {
-				V2F32 mouseRelative = (comm.mousePos - box->computedOffset - box->contentOffset) / box->contentScale;
 				I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / terminalTextHeight);
 				I32 offset = get_offset(heightInChars);
 				click_at(I32(mouseRelative.x / TextRenderer::string_size_x("a"sa, terminalTextHeight) + 0.5F), I32(mouseRelative.y / terminalTextHeight) + offset);
-			} else {
-
+			} else if(box->userData[3] != -1) {
+				F32 camWidth = 1920.0F;
+				F32 camHeight = 1080.0F;
+				F32 areaWidth = comm.renderArea.maxX - comm.renderArea.minX;
+				F32 areaHeight = comm.renderArea.maxY - comm.renderArea.minY;
+				V2F32 renderMid{ (comm.renderArea.minX + comm.renderArea.maxX) * 0.5F, (comm.renderArea.minY + comm.renderArea.maxY) * 0.5F };
+				F32 scale = areaWidth / camWidth;
+				if (camHeight * scale > areaHeight) {
+					scale = areaHeight / camHeight;
+				}
+				scale = 1.0F / scale;
+				V2F32 mousePos2 = (comm.mousePos - renderMid) * scale + V2F32{ 1920.0F * 0.5F, 1080.0F * 0.5F };
+				activeBees.push_back(Bee{ mousePos2, CyberSeaquell::totalTime });
 			}
 			return ACTION_HANDLED;
 		}
 		return ACTION_PASS;
 	};
 	panel->childB->content.unsafeBox->hoverCursor = Win32::CURSOR_TYPE_POINTER;
+	panel->childB->content.unsafeBox->userData[3] = -1;
+
+	cameraIndices[0] = 0;
+	cameraIndices[1] = 2;
+	cameraIndices[2] = 4;
+	cameraIndices[3] = 5;
+	cameraIndices[4] = 6;
+	cameraIndices[5] = 8;
+	cameraIndices[6] = 9;
+	cameraIndices[7] = 10;
+	cameraIndices[8] = 12;
 }
 }

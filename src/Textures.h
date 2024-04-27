@@ -38,6 +38,7 @@ Texture cam[14];
 Texture camRed;
 Texture camBee;
 Texture terminal;
+Texture bee;
 
 ArenaArrayList<Texture*> allTextures;
 ArenaArrayList<VkDeviceMemory> memoryUsed;
@@ -219,6 +220,7 @@ void load_all() {
 	load_png(&camRed, "resources/textures/camera-red.png"sa);
 	load_png(&camBee, "resources/textures/camera-bee.png"sa);
 	load_png(&terminal, "resources/textures/terminal.png"sa);
+	load_png(&bee, "resources/textures/bee.png"sa);
 	load_msdf(&fontAtlas, "resources/textures/font.ddf"sa);
 }
 
