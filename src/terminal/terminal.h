@@ -12,8 +12,18 @@ struct Terminal {
     file history;
 };
 
+enum TerminalMode {
+    Normal,
+    Input,
+    Camera,
+};
+
 Terminal ts[4]; //terminals
 
+bool t2_cam_enabled = false;
+int connectedCamNumber;
+
+TerminalMode terminalMode;
 int curTerminal;
 int curFile;
 
@@ -47,6 +57,7 @@ int get_line_len();
 
 //open a terminal number 'terminal'
 void open_terminal(int terminal) {
+    terminalMode = TerminalMode::Normal;
     curTerminal = terminal;
     curFile = 0;
     curCursorX = 2;
@@ -334,6 +345,51 @@ bool interpret_command(std::string cmd) {
         get_cur_file().push_back("  ERROR: file not found");
     } else if ("exit"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
         return true;
+    } else if ("lscam"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+        file& f = get_cur_file();
+        f.push_back("  Available cameras (name, id, status)");
+        f.push_back("  aim-1050     0   online");
+        f.push_back("  anticoin5    1   online");
+        f.push_back("  riista-11    2   online");
+        f.push_back("  abx-03c      3   online");
+        f.push_back("  abx-03c      4   online");
+        f.push_back("  abx-03b      5   online");
+        f.push_back("  abx12        6   " + t2_cam_enabled ? "online" : "offline");
+        f.push_back("  cryptocam    7   online");
+        f.push_back("  ccam3        8   online");
+        f.push_back("  Total: 9     Online: " + t2_cam_enabled ? "9" : "8");
+    } else if ("connect"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+        int argSize; int argFrom = seek(cmd, from, argSize);
+        if("camera"sa == StrA{ cmd.c_str()+argFrom, U64(argSize) }) {
+            argFrom = seek(cmd, from, argSize);
+            if (argSize == 1) {
+                if (cmd[argFrom] == '0') {
+                    ask_security_question(0);
+                } else if (cmd[argFrom] == '1') {
+                    ask_security_question(1);
+                } else if (cmd[argFrom] == '2') {
+                    ask_security_question(2);
+                } else if (cmd[argFrom] == '3') {
+                    ask_security_question(3);
+                } else if (cmd[argFrom] == '4') {
+                    ask_security_question(4);
+                } else if (cmd[argFrom] == '5') {
+                    ask_security_question(5);
+                } else if (cmd[argFrom] == '6') {
+                    ask_security_question(6);
+                } else if (cmd[argFrom] == '7') {
+                    ask_security_question(7);
+                } else if (cmd[argFrom] == '8') {
+                    ask_security_question(8);
+                } else {
+                    get_cur_file().push_back("  ERROR: camera doesn't exist");
+                }
+            } else {
+                get_cur_file().push_back("  ERROR: camera doesn't exist");
+            }
+        } else {
+            get_cur_file().push_back("  ERROR: not a destination");
+        }
     } else {
         get_cur_file().push_back("  ERROR: command not recognized");
     }
@@ -341,8 +397,20 @@ bool interpret_command(std::string cmd) {
     return false;
 }
 
+void ask_security_question(int terminal) {
+    connectedCamNumber = terminal;
+    terminalMode = TerminalMode::Input;
+    get_cur_file().push_back("  Please enter the security question:");
+    get_cur_file().push_back("  Of the 1437 native bee species in the US, how many are declining in population?");
+}
+
 std::string get_prompt() {
-    return "> ";
+    if (terminalMode == TerminalMode::Normal)
+        return "> ";
+    else if (terminalMode == TerminalMode::Input)
+        return ": ";
+    else
+        return connectedCamNumber + ">";
 }
 
 void change_file(int file) {
