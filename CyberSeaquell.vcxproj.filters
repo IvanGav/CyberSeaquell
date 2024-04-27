@@ -98,6 +98,9 @@
     <ClInclude Include="src\CyberSeaquell_decl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Sounds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\SerializeToolsPowerOf5Table.txt" />

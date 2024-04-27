@@ -94,9 +94,6 @@ bool type_char(Win32::Key char_code, char c) {
 
 //when a terminal is clicked, call this function with coordinates of the character that has been clicked
 void click_at(int x, int y) {
-    println_integer(x);
-    println_integer(y);
-    println();
     if (curFile != 0) {
         curCursorY = min(size_t(y), get_cur_file().size() - 1);
         curCursorX = min(size_t(x), get_cur_file()[curCursorY].size());
@@ -322,7 +319,7 @@ bool disallow_bees() {
     for (i = 0; i < (int)ts[curTerminal].names.size(); i++) {
         if (strcmp(ts[curTerminal].names[i].c_str(), "laserPerms.JSON") == 0) {
             for (int j = 0; j < (int)ts[curTerminal].files[i].size(); j++) {
-                if (strncmp(ts[curTerminal].files[i][j].c_str(), "disallow: bees", 14))
+                if (strncmp(ts[curTerminal].files[i][j].c_str(), "disallow: bees", 14) == 0)
                     return true;
             }
         }
