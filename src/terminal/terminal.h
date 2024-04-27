@@ -179,14 +179,14 @@ void terminals_init() {
     get_cur_file().push_back("");
     get_cur_file().push_back("https://unu.edu/press-release/un-study-reveals-hidden-environmental-impacts-bitcoin-carbon-not-only-harmful-product");
     //TESTING FILE
-    create_file("code.s");
-    curFile = 4;
-    get_cur_file()[0] = "MOV R0,99";
-    get_cur_file().push_back("LOG R0");
-    //TESTING FILE
-    create_file("log");
-    curFile = 5;
-    get_cur_file()[0] = "Log starts here:";
+    //create_file("code.s");
+    //curFile = 4;
+    //get_cur_file()[0] = "MOV R0,99";
+    //get_cur_file().push_back("LOG R0");
+    ////TESTING FILE
+    //create_file("log");
+    //curFile = 5;
+    //get_cur_file()[0] = "Log starts here:";
 
     curFile = 0;
     curTerminal = 1;

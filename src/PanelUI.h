@@ -295,6 +295,12 @@ void init() {
 		if (comm.tessellator) {
 			comm.tessellator->ui_rect2d(comm.renderArea.minX, comm.renderArea.minY, comm.renderArea.maxX, comm.renderArea.maxY, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 0.0F, 0.0F, 0.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
 			if (terminalActive) {
+				for (U32 i = 0; virus.active && i < 10; i++) {
+					interpret_next(virus);
+				}
+				if (virus.passed) {
+					cameraIndices[8] = 13;
+				}
 				file& file = get_terminal();
 				I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / terminalTextHeight);
 				I32 offset = get_offset(heightInChars);
