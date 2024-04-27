@@ -182,6 +182,8 @@ void free_panel(Panel* panel) {
 UI::Box* termBox;
 UI::Box* cams[8];
 UI::Box* terminals[4];
+B32 terminalActive;
+const F32 terminalTextHeight = 20.0F;
 
 void init() {
 	using namespace UI;
@@ -198,6 +200,7 @@ void init() {
 	panel = panel->parent;
 	UI_WORKING_BOX(panel->childA->content) {
 		UI_FLAGS(defaultFlagsStack.back() | BOX_FLAG_FLOATING_X | BOX_FLAG_FLOATING_Y) {
+			UI_FLAGS(defaultFlagsStack.back() | BOX_FLAG_DISABLED)
 			UI_SIZE((V2F32{ 32.0F, 32.0F }))
 			UI_BACKGROUND_COLOR((V4F32{ 1.0F, 1.0F, 1.0F, 1.0F })) {
 				(cams[0] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 1000.0F } *0.5F;
@@ -221,37 +224,61 @@ void init() {
 			generic_box().unsafeBox->backgroundTexture = &Textures::map[7];
 		}
 	}
+	cams[0]->flags &= ~BOX_FLAG_DISABLED;
+	cams[0]->backgroundTexture = &Textures::camBee;
 	terminals_init();
 	open_terminal(0);
+	terminalActive = true;
 	termBox = panel->childB->content.unsafeBox;
 	panel->childB->content.unsafeBox->actionCallback = [](Box* box, UserCommunication& comm) {
 		Panel& panel = *reinterpret_cast<Panel*>(box->userData[0]);
 		if (comm.tessellator) {
 			comm.tessellator->ui_rect2d(comm.renderArea.minX, comm.renderArea.minY, comm.renderArea.maxX, comm.renderArea.maxY, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 0.0F, 0.0F, 0.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
-			file& file = get_terminal();
-			F32 textHeight = 20.0F;
-			I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / textHeight);
-			I32 offset = get_offset(heightInChars);
-			for (U32 i = offset; i < min(offset + heightInChars, I32(file.size())); i++) {
-				TextRenderer::draw_string_batched(*comm.tessellator, StrA{ file[i].c_str(), file[i].length() }, comm.renderArea.minX, comm.renderArea.minY + F32(i - offset) * textHeight, comm.renderZ, textHeight, V4F32{0.7F, 0.7F, 0.7F, 1.0F}, comm.clipBoxIndex << 16);
-			}
-			if (U64(CyberSeaquell::totalTime * 2.0) & 1) {
-				F32 cursorX = comm.renderArea.minX + F32(cursor_x()) * TextRenderer::string_size_x("a"sa, textHeight);
-				F32 cursorY = comm.renderArea.minY + F32(cursor_y() - offset) * textHeight;
-				comm.tessellator->ui_rect2d(cursorX, cursorY, cursorX + 2.0F, cursorY + textHeight, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
+			if (terminalActive) {
+				file& file = get_terminal();
+				I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / terminalTextHeight);
+				I32 offset = get_offset(heightInChars);
+				for (U32 i = offset; i < min(offset + heightInChars, I32(file.size())); i++) {
+					TextRenderer::draw_string_batched(*comm.tessellator, StrA{ file[i].c_str(), file[i].length() }, comm.renderArea.minX, comm.renderArea.minY + F32(i - offset) * terminalTextHeight, comm.renderZ, terminalTextHeight, V4F32{ 0.7F, 0.7F, 0.7F, 1.0F }, comm.clipBoxIndex << 16);
+				}
+				if (U64(CyberSeaquell::totalTime * 2.0) & 1) {
+					F32 cursorX = comm.renderArea.minX + F32(cursor_x()) * TextRenderer::string_size_x("a"sa, terminalTextHeight);
+					F32 cursorY = comm.renderArea.minY + F32(cursor_y() - offset) * terminalTextHeight;
+					comm.tessellator->ui_rect2d(cursorX, cursorY, cursorX + 2.0F, cursorY + terminalTextHeight, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
+				}
+			} else {
+				F32 camWidth = 1920.0F;
+				F32 camHeight = 1080.0F;
+
+				//comm.tessellator->ui_rect2d();
 			}
 			return ACTION_HANDLED;
 		}
-		if (comm.keyPressed) {
-			type_char(comm.keyPressed, comm.charTyped);
+		if (terminalActive && comm.keyPressed) {
+			if (type_char(comm.keyPressed, comm.charTyped)) {
+				terminalActive = false;
+			}
 			return ACTION_HANDLED;
 		}
-		if (comm.scrollInput) {
+		if (terminalActive && comm.scrollInput) {
 			scroll_input(comm.scrollInput);
+			return ACTION_HANDLED;
+		}
+		if (comm.leftClicked) {
+			if (terminalActive) {
+				V2F32 mouseRelative = (comm.mousePos - box->computedOffset - box->contentOffset) / box->contentScale;
+				I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / terminalTextHeight);
+				I32 offset = get_offset(heightInChars);
+				click_at(I32(mouseRelative.x / TextRenderer::string_size_x("a"sa, terminalTextHeight) + 0.5F), I32(mouseRelative.y / terminalTextHeight) + offset);
+			} else {
+
+			}
 			return ACTION_HANDLED;
 		}
 		return ACTION_PASS;
 	};
 	panel->childB->content.unsafeBox->hoverCursor = Win32::CURSOR_TYPE_POINTER;
+
+	termBox->userData[3] = Textures::cam[0].index;
 }
 }

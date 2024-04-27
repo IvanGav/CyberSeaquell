@@ -328,6 +328,9 @@ void destroy_ui() {
 }
 
 void layout_boxes_recurse(Box* box) {
+	if (box->flags & BOX_FLAG_DISABLED) {
+		return;
+	}
 	box->computedSize = box->idealSize;
 	box->computedMinSize = box->minSize;
 	if (!box->text.is_empty() && !(box->flags & BOX_FLAG_DONT_LAYOUT_TO_FIT_CHILDREN)) {
@@ -368,6 +371,9 @@ void layout_boxes_recurse(Box* box) {
 		F32 maxAxisMin = 0.0F;
 		F32 maxOrthogonalMin = 0.0F;
 		for (Box* child = box->childFirst; child; child = child->next) {
+			if (child->flags & BOX_FLAG_DISABLED) {
+				continue;
+			}
 			if (child->flags & BOX_FLAG_RESET_LAYOUT) {
 				currentMin = current = 0.0F;
 			}
@@ -393,6 +399,9 @@ void layout_boxes_recurse(Box* box) {
 }
 
 void solve_layout_conflicts_and_position_boxes_recurse(Box* box, F32 scale) {
+	if (box->flags & BOX_FLAG_DISABLED) {
+		return;
+	}
 	V2F32 availableSpace = box->computedSize;
 	Axis2 layoutAxis = box->layoutDirection == LAYOUT_DIRECTION_UP || box->layoutDirection == LAYOUT_DIRECTION_DOWN ? AXIS2_Y : AXIS2_X;
 	Axis2 orthogonalAxis = layoutAxis == AXIS2_X ? AXIS2_Y : AXIS2_X;
@@ -402,6 +411,9 @@ void solve_layout_conflicts_and_position_boxes_recurse(Box* box, F32 scale) {
 	V2F32 takenSpace{};
 	V2F32 minTakenSpace{};
 	for (Box* child = box->childFirst; child; child = child->next) {
+		if (child->flags & BOX_FLAG_DISABLED) {
+			continue;
+		}
 		if (child->flags & BOX_FLAG_RESET_LAYOUT) {
 			currentLayoutOffset = 0.0F;
 			currentMin = 0.0F;
@@ -424,6 +436,9 @@ void solve_layout_conflicts_and_position_boxes_recurse(Box* box, F32 scale) {
 	F32 fixupRatio = violation.v[layoutAxis] / fixupBudget.v[layoutAxis];
 	if ((violation.x > 0 || violation.y > 0) && (fixupBudget.x > 0 || fixupBudget.y > 0)) {
 		for (Box* child = box->childFirst; child; child = child->next) {
+			if (child->flags & BOX_FLAG_DISABLED) {
+				continue;
+			}
 			V2F32 childFixupBudget = child->computedSize - child->computedMinSize;
 			if (violation.v[layoutAxis] > 0 && fixupBudget.v[layoutAxis] > 0 && !(child->flags & BOX_FLAG_FLOATING_X << layoutAxis)) {
 				F32 fixupSizeLayoutAxis = childFixupBudget.v[layoutAxis] * fixupRatio;
@@ -442,6 +457,9 @@ void solve_layout_conflicts_and_position_boxes_recurse(Box* box, F32 scale) {
 	currentLayoutOffset = 0.0F;
 	F32 availableOrthogonal = availableSpace.v[orthogonalAxis];
 	for (Box* child = box->childFirst; child; child = child->next) {
+		if (child->flags & BOX_FLAG_DISABLED) {
+			continue;
+		}
 		if (child->flags & BOX_FLAG_RESET_LAYOUT) {
 			currentLayoutOffset = 0.0F;
 		}
@@ -524,6 +542,9 @@ Rng2F32 compute_final_render_area_and_offset_for_children(V2F32* childrenOffset,
 	return Rng2F32{ finalStart.x, finalStart.y, finalEnd.x, finalEnd.y };
 }
 void draw_box(DynamicVertexBuffer::Tessellator& tes, Box* box, V2F32 mousePos, V2F32 parentComputedOffset, V2F32 offset, F32 scale, F32 z) {
+	if (box->flags & BOX_FLAG_DISABLED) {
+		return;
+	}
 	V2F32 childrenOffset;
 	Rng2F32 renderArea = compute_final_render_area_and_offset_for_children(&childrenOffset, box, parentComputedOffset, offset, scale);
 	if (box->flags & BOX_FLAG_CLIP_CHILDREN && currentClipBoxCount < MAX_CLIP_BOXES) {
@@ -609,6 +630,9 @@ void draw() {
 }
 
 B32 mouse_input_for_box_recurse(B32* anyContained, Box* box, V2F32 pos, Win32::MouseButton button, Win32::MouseValue state, V2F32 computedParentOffset, V2F32 offset, F32 scale) {
+	if (box->flags & BOX_FLAG_DISABLED) {
+		return false;
+	}
 	V2F32 childrenOffset;
 	Rng2F32 renderArea = compute_final_render_area_and_offset_for_children(&childrenOffset, box, computedParentOffset, offset, scale);
 	B32 mouseOutside = !rng_contains_point(renderArea, pos);
@@ -692,6 +716,9 @@ contextMenuClicked:;
 	modificationLock.unlock_write();
 }
 B32 mouse_update_for_box_recurse(B32* anyContains, Box* box, V2F32 pos, V2F32 delta, V2F32 computedParentOffset, V2F32 offset, F32 scale) {
+	if (box->flags & BOX_FLAG_DISABLED) {
+		return false;
+	}
 	V2F32 childrenOffset;
 	Rng2F32 renderArea = compute_final_render_area_and_offset_for_children(&childrenOffset, box, computedParentOffset, offset, scale);
 	B32 mouseOutside = !rng_contains_point(renderArea, pos);
@@ -756,6 +783,9 @@ void handle_mouse_update(V2F32 pos, V2F32 delta) {
 	modificationLock.unlock_write();
 }
 B32 keyboard_input_for_box_recurse(B32* anyContained, Box* box, V2F32 pos, Win32::Key key, Win32::ButtonState state, V2F32 computedParentOffset, V2F32 offset, F32 scale) {
+	if (box->flags & BOX_FLAG_DISABLED) {
+		return false;
+	}
 	V2F32 childrenOffset;
 	Rng2F32 renderArea = compute_final_render_area_and_offset_for_children(&childrenOffset, box, computedParentOffset, offset, scale);
 	B32 mouseOutside = !rng_contains_point(renderArea, pos);
