@@ -246,6 +246,11 @@ void init() {
 					F32 cursorY = comm.renderArea.minY + F32(cursor_y() - offset) * terminalTextHeight;
 					comm.tessellator->ui_rect2d(cursorX, cursorY, cursorX + 2.0F, cursorY + terminalTextHeight, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
 				}
+			} else {
+				F32 camWidth = 1920.0F;
+				F32 camHeight = 1080.0F;
+
+				comm.tessellator->ui_rect2d();
 			}
 			return ACTION_HANDLED;
 		}
@@ -259,13 +264,21 @@ void init() {
 			scroll_input(comm.scrollInput);
 			return ACTION_HANDLED;
 		}
-		if (terminalActive && comm.leftClicked) {
-			V2F32 mouseRelative = (comm.mousePos - box->computedOffset - box->contentOffset) / box->contentScale;
-			click_at(I32(mouseRelative.x / TextRenderer::string_size_x("a"sa, terminalTextHeight) + 0.5F), I32(mouseRelative.y / terminalTextHeight));
+		if (comm.leftClicked) {
+			if (terminalActive) {
+				V2F32 mouseRelative = (comm.mousePos - box->computedOffset - box->contentOffset) / box->contentScale;
+				I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / terminalTextHeight);
+				I32 offset = get_offset(heightInChars);
+				click_at(I32(mouseRelative.x / TextRenderer::string_size_x("a"sa, terminalTextHeight) + 0.5F), I32(mouseRelative.y / terminalTextHeight) + offset);
+			} else {
+
+			}
 			return ACTION_HANDLED;
 		}
 		return ACTION_PASS;
 	};
 	panel->childB->content.unsafeBox->hoverCursor = Win32::CURSOR_TYPE_POINTER;
+
+	termBox->userData[3] = Textures::cam[0].index;
 }
 }
