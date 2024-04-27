@@ -319,12 +319,12 @@ bool disallow_bees() {
     for (i = 0; i < (int)ts[curTerminal].names.size(); i++) {
         if (strcmp(ts[curTerminal].names[i].c_str(), "laserPerms.JSON") == 0) {
             for (int j = 0; j < (int)ts[curTerminal].files[i].size(); j++) {
-                if (strcmp(ts[curTerminal].files[i][j].substr(0, 14).c_str(), "disallow: bees"))
-                    return false;
+                if (strncmp(ts[curTerminal].files[i][j].c_str(), "disallow: bees", 14))
+                    return true;
             }
         }
     }
-    return true;
+    return false;
 }
 
 /*
