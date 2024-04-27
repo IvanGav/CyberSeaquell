@@ -200,6 +200,38 @@ U32 passcodeBufferIndex;
 
 void init() {
 	using namespace UI;
+	UI_BACKGROUND_COLOR((V4F32{ 1.0F, 1.0F, 0.5F, 1.0F })) {
+		BoxHandle titleScreen = generic_box();
+		titleScreen.unsafeBox->flags |= BOX_FLAG_INVISIBLE | BOX_FLAG_CUSTOM_DRAW;
+		titleScreen.unsafeBox->minSize = V2F32{ BOX_INF_SIZE, BOX_INF_SIZE };
+		titleScreen.unsafeBox->zOffset = -2.0F;
+		titleScreen.unsafeBox->hoverCursor = Win32::CURSOR_TYPE_POINTER;
+		titleScreen.unsafeBox->actionCallback = [](Box* box, UserCommunication& comm) {
+			if (comm.tessellator) {
+				comm.tessellator->ui_rect2d(0.0F, 0.0F, UI::root.unsafeBox->computedSize.x, UI::root.unsafeBox->computedSize.y, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::titleScreen.index, 0);
+			}
+			if (comm.leftClicked) {
+				box->flags |= BOX_FLAG_DISABLED;
+			}
+			return ACTION_HANDLED;
+		};
+		BoxHandle noteScreen = generic_box();
+		noteScreen.unsafeBox->flags |= BOX_FLAG_INVISIBLE | BOX_FLAG_CUSTOM_DRAW;
+		noteScreen.unsafeBox->minSize = V2F32{ BOX_INF_SIZE, BOX_INF_SIZE };
+		noteScreen.unsafeBox->zOffset = -1.0F;
+		noteScreen.unsafeBox->hoverCursor = Win32::CURSOR_TYPE_POINTER;
+		noteScreen.unsafeBox->actionCallback = [](Box* box, UserCommunication& comm) {
+			if (comm.tessellator) {
+				comm.tessellator->ui_rect2d(0.0F, 0.0F, UI::root.unsafeBox->computedSize.x, UI::root.unsafeBox->computedSize.y, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::notesToSelf.index, 0);
+			}
+			if (comm.leftClicked) {
+				box->flags |= BOX_FLAG_DISABLED;
+			}
+			return ACTION_HANDLED;
+		};
+	}
+	
+
 	Panel* panel = alloc_panel();
 	panel->uiBox = UI::alloc_box();
 	panel->uiBox.unsafeBox->flags = UI::BOX_FLAG_DONT_LAYOUT_TO_FIT_CHILDREN;
