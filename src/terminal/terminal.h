@@ -39,6 +39,7 @@ void delete_key();
 bool enter_key();
 void insert_char(char c);
 bool interpret_typed_character(Win32::Key charCode, char c);
+int get_line_len();
 
 /*
     API
@@ -81,7 +82,10 @@ void click_at(int x, int y) {
     println_integer(x);
     println_integer(y);
     println();
-    if(curFile != 0 || (y == curCursorY && x > 2)) {
+    if (curFile != 0) {
+        curCursorY = min(size_t(y), get_cur_file().size() - 1);
+        curCursorX = min(size_t(x), get_cur_file()[curCursorY].size());
+    } else if (y == curCursorY && x > 1 && x <= get_line_len()) {
         curCursorX = x;
         curCursorY = y;
     }
@@ -125,8 +129,17 @@ void terminals_init() {
     curTerminal = 0;
     create_file("t0");
     get_cur_file().pop_back();
-    create_file("laserPerms.JSON");
+    create_file("maintenanceNote.txt");
     curFile = 1;
+    get_cur_file()[0] = "maintenance Moe here!";
+    get_cur_file().push_back("");
+    get_cur_file().push_back("I just set up the laser system like you wanted, it uses the laserPerms.JSON");
+    get_cur_file().push_back("file to detect who should be allowed to go through the laser");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("Its currently set up to allow humans and absolutely disallow bees and seagulls");
+    get_cur_file().push_back("so as long as no one deletes those lines, the system should work perfectly");
+    create_file("laserPerms.JSON");
+    curFile = 2;
     get_cur_file()[0] = "name:Laser Permissions";
     get_cur_file().push_back("id: 58496");
     get_cur_file().push_back("allow: humans");
@@ -139,16 +152,19 @@ void terminals_init() {
     get_cur_file().push_back("beavers: keystone species should be protected");
     get_cur_file().push_back("native US bees: endangered");
     create_file("cryptoStats.txt");
-    curFile = 2;
+    curFile = 3;
     get_cur_file()[0] = "If Bitcoin were a country, its energy consumption would";
     get_cur_file().push_back("have ranked 27th in the world in 2020-2021, ahead of a country like Pakistan,");
     get_cur_file().push_back("with a population of over 230 million people.");
+    get_cur_file().push_back("");
     get_cur_file().push_back("Equivalent to that of burning 84 billion pounds of coal");
     get_cur_file().push_back("or operating 190 natural gas-fired power plants.");
+    get_cur_file().push_back("");
     get_cur_file().push_back("At the same time, Bitcoin used water equivalent to about");
     get_cur_file().push_back("660,000 Olympic-sized swimming pools or enough to meet the");
     get_cur_file().push_back("current domestic water needs of more than 300 million people");
     get_cur_file().push_back("in rural sub-Saharan Africa");
+    get_cur_file().push_back("");
     get_cur_file().push_back("https://unu.edu/press-release/un-study-reveals-hidden-environmental-impacts-bitcoin-carbon-not-only-harmful-product");
 
     curFile = 0;
@@ -161,10 +177,32 @@ void terminals_init() {
     get_cur_file().push_back("note to self: still need to do the final setup on this camera");
     get_cur_file().push_back("only a few last commands left but im so forgetful");
     get_cur_file().push_back("ill just write them down here for now:");
+    get_cur_file().push_back("");
     get_cur_file().push_back("lscam");
     get_cur_file().push_back("connect camera (id of disabled camera)");
     get_cur_file().push_back("...then I just need to answer the security question");
     get_cur_file().push_back("enable camera");
+    create_file("beeStats.txt");
+    curFile = 2;
+    get_cur_file()[0] = "Of the 1437 native bee species in the US, 749 are declining in population.";
+    get_cur_file().push_back("");
+    get_cur_file().push_back("1 out of 4 native bee species is at increased risk of extinction");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("The major culprits of these declines are habitat loss, pesticide use,");
+    get_cur_file().push_back("monocultures, climate change, and urbanization");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("Not just bees are at risk, more than 40 percent of insect pollinators");
+    get_cur_file().push_back("globally are highly threatened");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("Monocultures seem to be the largest cause");
+    get_cur_file().push_back("Between 2008 and 2013, wild bee abundance declined across nearly quarter");
+    get_cur_file().push_back("of the United States, with California's Central Valley and the Midwest's Corn Belt");
+    get_cur_file().push_back("ranking among the lowest in wild bee abundance");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("Kopec, K., Ann Burd, L., & Center for Biological Diversity. (2017).");
+    get_cur_file().push_back("Pollinators in Peril:: A Systematic Status Review of North American and Hawaiian Native Bees.");
+    get_cur_file().push_back("In https://www.biologicaldiversity.org/. Center for Biological Diversity. Retrieved April 27, 2024,");
+    get_cur_file().push_back("from https ://www.biologicaldiversity.org/campaigns/native_pollinators/pdfs/Pollinators_in_Peril.pdf");
 
     curFile = 0;
     curTerminal = 2;
@@ -176,14 +214,32 @@ void terminals_init() {
     get_cur_file().push_back("luckily i, Maintenance Moe, was here to encrypt the password");
     get_cur_file().push_back("but just to make sure everyone can still get in I used the key: sustainability");
     get_cur_file().push_back("(as a little joke because we are not sustainable)");
+    get_cur_file().push_back("");
     get_cur_file().push_back("the encrypted password is: kcpyidroomyqgc");
+    get_cur_file().push_back("");
     get_cur_file().push_back("man, this passwords so secure only a roman emperor could crack this");
     create_file("ifeltbadthatyouwontfigureoutthepassword.txt");
     curFile = 2;
     get_cur_file()[0] = "Hey, maintenance Moe here";
     get_cur_file().push_back("JUST TO BE CLEAR, i was hinting that this used a Vigenere cipher");
     get_cur_file().push_back("with a key: sustainability");
+    get_cur_file().push_back("");
     get_cur_file().push_back("you can use any online decodder of choice");
+    create_file("llamaStats.txt");
+    curFile = 3;
+    get_cur_file()[0] = "The llama population dropped from 145,000 to less than 40,000 from 2002 to 2017.";
+    get_cur_file().push_back("This is mostly due to the steep decline in the popularity of llama.");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("The llama industry once included well known celebrities and athletes.");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("They were used to provide fiber and herd sheep.");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("In 1986, a llama sold for $220,000.");
+    get_cur_file().push_back("Llama popularity crashed with the housing market.");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("Warmer Climates have led to increased parasites in llamas.");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("https://www.nbcnews.com/news/us-news/llamas-disappearing-across-united-states-n994181");
     
 
     curFile = 0;
@@ -193,10 +249,14 @@ void terminals_init() {
     create_file("prisonSystemSpecs.txt");
     curFile = 1;
     get_cur_file()[0] = "Hey, maintenance Moe again, just set up this prison system!";
+    get_cur_file().push_back("");
     get_cur_file().push_back("tried to make a system that will just lock them in forever like you wanted");
-    get_cur_file().push_back("but unfortunately thats impossible so i just amde it really difficult");
+    get_cur_file().push_back("but unfortunately thats impossible so i just made it really difficult");
+    get_cur_file().push_back("");
     get_cur_file().push_back("if someone wants to let them out theyd have to write some kind of program");
-    get_cur_file().push_back("that would take in an integer and print that many prime numbers");
+    get_cur_file().push_back("in the primeNumbers.seag file that would take in an integer and print that");
+    get_cur_file().push_back("many prime numbers");
+    get_cur_file().push_back("");
     get_cur_file().push_back("luckily theres no hacker advanced enough to do something like that");
     create_file("seagullLanguageBasics.txt");
     curFile = 2;
@@ -218,6 +278,23 @@ void terminals_init() {
     get_cur_file().push_back("POP pop from stack");
     create_file("primeNumbers.seag");
     curFile = 3;
+    create_file("beaverStats.txt");
+    curFile = 4;
+    get_cur_file()[0] = "Beavers used to live in almost every stream in North America";
+    get_cur_file().push_back("and numbered in the many millions");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("Due to demand for their fur, they were hunted to near extinction");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("Despite reintroductions and natural expansion, the beavers haven't returned");
+    get_cur_file().push_back("fully which is very bad for the environments they once inhabited.");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("Beavers are keystone species thanks to the dams they build. This means");
+    get_cur_file().push_back("they are crucial to the stability and wellbeing of every other animal");
+    get_cur_file().push_back("in their wetland.");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("Entire ecosystems are still in disarray from their absence.");
+    get_cur_file().push_back("");
+    get_cur_file().push_back("https://defenders.org/wildlife/beaver");
 }
 
 void scroll_input(F32 scroll) {
@@ -228,6 +305,10 @@ void scroll_input(F32 scroll) {
 /*
     Internal
 */
+
+int get_line_len() {
+    return get_cur_file()[curCursorY].size();
+}
 
 void create_file(std::string name) {
     std::vector<std::string> f;
@@ -343,7 +424,7 @@ void change_file(int file) {
     if(file == 0) {
         curCursorX = 2;
     } else {
-        curCursorX = get_cur_file()[curCursorY].size();
+        curCursorX = get_line_len();
     }
     curOffset = -1;
 }
@@ -366,7 +447,7 @@ int seek(std::string& str, int& from, int& len) {
 
 //return true if cursor is currently the rightmost of the line
 bool rightmost() {
-    return get_cur_file()[curCursorY].size() == curCursorX;
+    return get_line_len() == curCursorX;
 }
 
 //when in a terminal, set the latest line to be the correct selected (history) command
@@ -424,7 +505,7 @@ void up_arrow() {
         if(editingHistory == 0) return;
         editingHistory--;
         setCurTerminalLine();
-        curCursorX = get_cur_file()[curCursorY].size();
+        curCursorX = get_line_len();
     } else {
         //in editor
         if (curCursorY == 0) {
@@ -434,10 +515,10 @@ void up_arrow() {
         }
         curCursorY--;
         curCursorX = max(curCursorX, savedCursorX);
-        if (get_cur_file()[curCursorY].size() < curCursorX) {
+        if (get_line_len() < curCursorX) {
             //bad, save
             savedCursorX = max(curCursorX, savedCursorX);
-            curCursorX = get_cur_file()[curCursorY].size();
+            curCursorX = get_line_len();
         }
     }
 }
@@ -448,16 +529,16 @@ void down_arrow() {
         if(editingHistory == ts[curTerminal].history.size()-1) return;
         editingHistory++;
         setCurTerminalLine();
-        curCursorX = get_cur_file()[curCursorY].size();
+        curCursorX = get_line_len();
     } else {
         //in editor
-        if (curCursorY == get_cur_file().size() - 1) { curCursorX = get_cur_file()[curCursorY].size(); return; }
+        if (curCursorY == get_cur_file().size() - 1) { curCursorX = get_line_len(); return; }
         curCursorY++;
         curCursorX = max(curCursorX, savedCursorX);
-        if (get_cur_file()[curCursorY].size() < curCursorX) {
+        if (get_line_len() < curCursorX) {
             //bad, save
             savedCursorX = max(curCursorX, savedCursorX);
-            curCursorX = get_cur_file()[curCursorY].size();
+            curCursorX = get_line_len();
         }
     }
 }
@@ -472,7 +553,7 @@ void left_arrow() {
 
 //go right until to the right of the rightmost character; reset savedCursorX
 void right_arrow() {
-    if(curCursorX < get_cur_file()[curCursorY].size()) {
+    if(curCursorX < get_line_len()) {
         curCursorX++;
     }
     savedCursorX = 0;
@@ -516,7 +597,7 @@ void backspace_key() {
         } else {
             if (curCursorY == 0) return;
             curCursorY--;
-            curCursorX = f[curCursorY].size();
+            curCursorX = get_line_len();
             f[curCursorY].append(f[curCursorY+1]);
             f.erase(f.begin() + curCursorY + 1);
         }
