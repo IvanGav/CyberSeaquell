@@ -203,7 +203,7 @@ void init() {
 			UI_FLAGS(defaultFlagsStack.back() | BOX_FLAG_DISABLED)
 			UI_SIZE((V2F32{ 32.0F, 32.0F }))
 			UI_BACKGROUND_COLOR((V4F32{ 1.0F, 1.0F, 1.0F, 1.0F })) {
-				(cams[0] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 1000.0F } *0.5F;
+				(cams[0] = button(Textures::camRed, [](Box* b) { termBox->userData[3] = Textures::cam[0].index; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 1000.0F } *0.5F;
 				(cams[1] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 762.0F } *0.5F;
 				(cams[2] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1108.0F, 542.0F } *0.5F;
 				(cams[3] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1104.0F, 295.0F } *0.5F;
@@ -227,8 +227,6 @@ void init() {
 	cams[0]->flags &= ~BOX_FLAG_DISABLED;
 	cams[0]->backgroundTexture = &Textures::camBee;
 	terminals_init();
-	open_terminal(0);
-	terminalActive = true;
 	termBox = panel->childB->content.unsafeBox;
 	panel->childB->content.unsafeBox->actionCallback = [](Box* box, UserCommunication& comm) {
 		Panel& panel = *reinterpret_cast<Panel*>(box->userData[0]);
@@ -246,11 +244,18 @@ void init() {
 					F32 cursorY = comm.renderArea.minY + F32(cursor_y() - offset) * terminalTextHeight;
 					comm.tessellator->ui_rect2d(cursorX, cursorY, cursorX + 2.0F, cursorY + terminalTextHeight, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
 				}
-			} else {
+			} else if(box->userData[3] != 0) {
 				F32 camWidth = 1920.0F;
 				F32 camHeight = 1080.0F;
-
-				comm.tessellator->ui_rect2d();
+				F32 areaWidth = comm.renderArea.maxX - comm.renderArea.minX;
+				F32 areaHeight = comm.renderArea.maxY - comm.renderArea.minY;
+				F32 scale = areaWidth / camWidth;
+				if (camHeight * scale > areaHeight) {
+					scale = areaHeight / camHeight;
+				}
+				V2F32 renderMid{ (comm.renderArea.minX + comm.renderArea.maxX) * 0.5F, (comm.renderArea.minY + comm.renderArea.maxY) * 0.5F };
+				V2F32 halfExtent{ camWidth * 0.5F * scale, camHeight * 0.5F * scale };
+				comm.tessellator->ui_rect2d(renderMid.x - halfExtent.x, renderMid.y - halfExtent.y, renderMid.x + halfExtent.x, renderMid.y + halfExtent.y, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, box->userData[3], comm.clipBoxIndex << 16);
 			}
 			return ACTION_HANDLED;
 		}
@@ -278,7 +283,5 @@ void init() {
 		return ACTION_PASS;
 	};
 	panel->childB->content.unsafeBox->hoverCursor = Win32::CURSOR_TYPE_POINTER;
-
-	termBox->userData[3] = Textures::cam[0].index;
 }
 }
