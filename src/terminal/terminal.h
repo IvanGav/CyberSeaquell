@@ -85,7 +85,7 @@ void click_at(int x, int y) {
 int get_offset(int height) {
     if(curOffset == -1) {
         if(curFile == 0) {
-            curOffset = curCursorY-1;
+            curOffset = curCursorY;
         } else {
             curOffset = max(curCursorY-height+1, 0);
         }
@@ -118,7 +118,7 @@ void terminals_init() {
     curFile = 0;
     curTerminal = 0;
     create_file("t0");
-    get_cur_file()[0] = get_prompt();
+    get_cur_file().pop_back();
     create_file("test.txt");
     curFile = 1;
     get_cur_file()[0] = "it's such a terrible system i made";
@@ -127,17 +127,22 @@ void terminals_init() {
     curFile = 0;
     curTerminal = 1;
     create_file("t1");
-    get_cur_file()[0] = get_prompt();
+    get_cur_file().pop_back();
 
     curFile = 0;
     curTerminal = 2;
     create_file("t2");
-    get_cur_file()[0] = get_prompt();
+    get_cur_file().pop_back();
 
     curFile = 0;
     curTerminal = 3;
     create_file("t3");
-    get_cur_file()[0] = get_prompt();
+    get_cur_file().pop_back();
+}
+
+void scroll_input(F32 scroll) {
+    //assume -120 to 120
+    curOffset = clamp(curOffset - signumf32(scroll), 0, curCursorY);
 }
 
 /*
@@ -156,7 +161,7 @@ bool interpret_command(std::string cmd) {
     int from = 0;
     int cmdsize;
     seek(cmd, from, cmdsize);
-    if(strncmp("help", cmd.c_str(), cmdsize)) {
+    if ("help"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
         // int argSize = seek(cmd, from);
         // if(strncmp("-please", cmd.c_str(), cmdsize))
         file& f = get_cur_file();
@@ -178,9 +183,9 @@ bool interpret_command(std::string cmd) {
 
         f.push_back("  zgull file");
         f.push_back("    open a given file in zgull");
-    } else if(strncmp("clear", cmd.c_str(), cmdsize)) {
+    } else if ("clear"sa == StrA{ cmd.c_str(), U64(cmdsize) } ) {
         get_cur_file().clear();
-    } else if(strncmp("ls", cmd.c_str(), cmdsize)) {
+    } else if ("ls"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
         get_cur_file().push_back("  .");
         get_cur_file().push_back("  ..");
         for(int i = 1; i < ts[curTerminal].files.size(); i++) {
@@ -189,12 +194,12 @@ bool interpret_command(std::string cmd) {
     // } else if(strncmp("cd", cmd.c_str(), cmdsize)) {
     //     int argSize = seek(cmd, from);
     //     if(strncmp(".", cmd.c_str(), cmdsize));
-    } else if(strncmp("pwd", cmd.c_str(), cmdsize)) {
+    } else if ("pwd"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
         get_cur_file().push_back("  C:/cryptocom/central facility/ehtp1nfo34-terminal" + std::to_string(curTerminal));
-    } else if(strncmp("zgull", cmd.c_str(), cmdsize)) {
-        int argSize; seek(cmd, from, argSize);
+    } else if ("zgull"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+        int argSize; int argFrom = seek(cmd, from, argSize);
         for(int i = 1; i < ts[curTerminal].files.size(); i++) {
-            if(strncmp(ts[curTerminal].names[i].c_str(), cmd.c_str()+cmdsize+1, argSize)) {
+            if (StrA{ ts[curTerminal].names[i].c_str(), ts[curTerminal].names[i].size() } == StrA{ cmd.c_str() + argFrom, U64(argSize) }) {
                 //open a file i
                 newCmdLine();
                 change_file(i);
@@ -203,7 +208,7 @@ bool interpret_command(std::string cmd) {
         }
         //print error
         get_cur_file().push_back("  ERROR: file not found");
-    } else if(strncmp("exit", cmd.c_str(), cmdsize)) {
+    } else if ("exit"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
         return true;
     } else {
         get_cur_file().push_back("  ERROR: command not recognized");
@@ -222,7 +227,7 @@ void change_file(int file) {
     if(file == 0) {
         curCursorX = 2;
     } else {
-        curCursorX = get_cur_file()[curCursorY].size()-1;
+        curCursorX = get_cur_file()[curCursorY].size();
     }
     curOffset = -1;
 }
@@ -239,7 +244,7 @@ int seek(std::string& str, int& from, int& len) {
         from++;
         len++;
     }
-    from++;
+    while(from < str.size() && str[from] == ' ') from++;
     return from_old;
 }
 
@@ -305,12 +310,11 @@ void up_arrow() {
         //in editor
         if(curCursorY == 0) return;
         curCursorY--;
+        curCursorX = max(curCursorX, savedCursorX);
         if(get_cur_file()[curCursorY].size() < curCursorX) {
             //bad, save
-            savedCursorX = std::max(curCursorX, savedCursorX);
-        } else {
-            //good, it's fine, but check if can go back to savedCursorX
-            curCursorX = std::max(curCursorX, savedCursorX);
+            savedCursorX = max(curCursorX, savedCursorX);
+            curCursorX = get_cur_file()[curCursorY].size();
         }
     }
 }
@@ -325,13 +329,12 @@ void down_arrow() {
         //in editor
         if(curCursorY == get_cur_file().size()-1) return;
         curCursorY++;
-        if(get_cur_file()[curCursorY].size() < curCursorX) {
-            //bad, save
-            savedCursorX = std::max(curCursorX, savedCursorX);
-        } else {
-            //good, it's fine, but check if can go back to savedCursorX
-            curCursorX = std::max(curCursorX, savedCursorX);
-        }
+    }
+    curCursorX = max(curCursorX, savedCursorX);
+    if (get_cur_file()[curCursorY].size() < curCursorX) {
+        //bad, save
+        savedCursorX = max(curCursorX, savedCursorX);
+        curCursorX = get_cur_file()[curCursorY].size();
     }
 }
 
@@ -375,8 +378,8 @@ void backspace_key() {
     if(curFile == 0) {
         //terminal
         file& f = get_cur_file();
-        if(curCursorX >= 2) {
-            ts[curTerminal].history[editingHistory].erase(curCursorX-2, 1);
+        if(curCursorX > 2) {
+            ts[curTerminal].history[editingHistory].erase(curCursorX-3, 1);
             left_arrow();
         }
         setCurTerminalLine();
@@ -384,7 +387,7 @@ void backspace_key() {
         //editor
         file& f = get_cur_file();
         if(curCursorX != 0) {
-            f[curCursorY].erase(curCursorX, 1);
+            f[curCursorY].erase(curCursorX-1, 1);
             left_arrow();
         } else {
             //merge 2 lines

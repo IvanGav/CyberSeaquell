@@ -237,13 +237,17 @@ void init() {
 			}
 			if (U64(CyberSeaquell::totalTime * 2.0) & 1) {
 				F32 cursorX = comm.renderArea.minX + F32(cursor_x()) * TextRenderer::string_size_x("a"sa, textHeight);
-				F32 cursorY = comm.renderArea.minY + F32(cursor_y()) * textHeight;
+				F32 cursorY = comm.renderArea.minY + F32(cursor_y() - offset) * textHeight;
 				comm.tessellator->ui_rect2d(cursorX, cursorY, cursorX + 2.0F, cursorY + textHeight, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
 			}
 			return ACTION_HANDLED;
 		}
 		if (comm.keyPressed) {
 			type_char(comm.keyPressed, comm.charTyped);
+			return ACTION_HANDLED;
+		}
+		if (comm.scrollInput) {
+			scroll_input(comm.scrollInput);
 			return ACTION_HANDLED;
 		}
 		return ACTION_PASS;
