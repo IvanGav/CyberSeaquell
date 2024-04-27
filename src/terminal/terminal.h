@@ -45,8 +45,9 @@ void click_at(int x, int y) {
     return;
 }
 
+//get offset based on current height
 int get_offset(int height) {
-    return height - cursor_y();
+    return -1;
 }
 
 /*
