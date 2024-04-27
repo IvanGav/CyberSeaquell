@@ -187,6 +187,7 @@
     <ClInclude Include="src\PanelUI.h" />
     <ClInclude Include="src\PNG.h" />
     <ClInclude Include="src\SerializeTools.h" />
+    <ClInclude Include="src\Sounds.h" />
     <ClInclude Include="src\stb_vorbis.h" />
     <ClInclude Include="src\terminal\terminal.h" />
     <ClInclude Include="src\TextRenderer.h" />

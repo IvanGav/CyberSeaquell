@@ -397,10 +397,10 @@ void init() {
 							} else if (rng_contains_point(Rng2F32{ 987, 501, 1032, 593 }, clickPos)) {
 								passcodeBuffer[(passcodeBufferIndex++) & 3] = 9;
 							} else if (rng_contains_point(Rng2F32{ 1047, 447, 1095, 492 }, clickPos)) {
-								if (passcodeBuffer[(passcodeBufferIndex) & 3] == 1 &&
-									passcodeBuffer[(passcodeBufferIndex + 1) & 3] == 2 &&
-									passcodeBuffer[(passcodeBufferIndex + 2) & 3] == 3 &&
-									passcodeBuffer[(passcodeBufferIndex + 3) & 3] == 4) {
+								if (passcodeBuffer[(passcodeBufferIndex) & 3] == 6 &&
+									passcodeBuffer[(passcodeBufferIndex + 1) & 3] == 5 &&
+									passcodeBuffer[(passcodeBufferIndex + 2) & 3] == 1 &&
+									passcodeBuffer[(passcodeBufferIndex + 3) & 3] == 9) {
 
 									cameraIndices[7] = 11;
 								}
