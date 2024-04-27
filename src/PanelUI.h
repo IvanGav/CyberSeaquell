@@ -250,7 +250,7 @@ void init() {
 				F32 camWidth = 1920.0F;
 				F32 camHeight = 1080.0F;
 
-				comm.tessellator->ui_rect2d();
+				//comm.tessellator->ui_rect2d();
 			}
 			return ACTION_HANDLED;
 		}

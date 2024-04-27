@@ -39,6 +39,7 @@ void delete_key();
 bool enter_key();
 void insert_char(char c);
 bool interpret_typed_character(Win32::Key charCode, char c);
+int get_line_len();
 
 /*
     API
@@ -81,7 +82,10 @@ void click_at(int x, int y) {
     println_integer(x);
     println_integer(y);
     println();
-    if(curFile != 0 || (y == curCursorY && x > 2)) {
+    if (curFile != 0) {
+        curCursorY = min(size_t(y), get_cur_file().size() - 1);
+        curCursorX = min(size_t(x), get_cur_file()[curCursorY].size());
+    } else if (y == curCursorY && x > 1 && x <= get_line_len()) {
         curCursorX = x;
         curCursorY = y;
     }
@@ -229,6 +233,10 @@ void scroll_input(F32 scroll) {
     Internal
 */
 
+int get_line_len() {
+    return get_cur_file()[curCursorY].size();
+}
+
 void create_file(std::string name) {
     std::vector<std::string> f;
     f.push_back("");
@@ -343,7 +351,7 @@ void change_file(int file) {
     if(file == 0) {
         curCursorX = 2;
     } else {
-        curCursorX = get_cur_file()[curCursorY].size();
+        curCursorX = get_line_len();
     }
     curOffset = -1;
 }
@@ -366,7 +374,7 @@ int seek(std::string& str, int& from, int& len) {
 
 //return true if cursor is currently the rightmost of the line
 bool rightmost() {
-    return get_cur_file()[curCursorY].size() == curCursorX;
+    return get_line_len() == curCursorX;
 }
 
 //when in a terminal, set the latest line to be the correct selected (history) command
@@ -424,7 +432,7 @@ void up_arrow() {
         if(editingHistory == 0) return;
         editingHistory--;
         setCurTerminalLine();
-        curCursorX = get_cur_file()[curCursorY].size();
+        curCursorX = get_line_len();
     } else {
         //in editor
         if (curCursorY == 0) {
@@ -434,10 +442,10 @@ void up_arrow() {
         }
         curCursorY--;
         curCursorX = max(curCursorX, savedCursorX);
-        if (get_cur_file()[curCursorY].size() < curCursorX) {
+        if (get_line_len() < curCursorX) {
             //bad, save
             savedCursorX = max(curCursorX, savedCursorX);
-            curCursorX = get_cur_file()[curCursorY].size();
+            curCursorX = get_line_len();
         }
     }
 }
@@ -448,16 +456,16 @@ void down_arrow() {
         if(editingHistory == ts[curTerminal].history.size()-1) return;
         editingHistory++;
         setCurTerminalLine();
-        curCursorX = get_cur_file()[curCursorY].size();
+        curCursorX = get_line_len();
     } else {
         //in editor
-        if (curCursorY == get_cur_file().size() - 1) { curCursorX = get_cur_file()[curCursorY].size(); return; }
+        if (curCursorY == get_cur_file().size() - 1) { curCursorX = get_line_len(); return; }
         curCursorY++;
         curCursorX = max(curCursorX, savedCursorX);
-        if (get_cur_file()[curCursorY].size() < curCursorX) {
+        if (get_line_len() < curCursorX) {
             //bad, save
             savedCursorX = max(curCursorX, savedCursorX);
-            curCursorX = get_cur_file()[curCursorY].size();
+            curCursorX = get_line_len();
         }
     }
 }
@@ -472,7 +480,7 @@ void left_arrow() {
 
 //go right until to the right of the rightmost character; reset savedCursorX
 void right_arrow() {
-    if(curCursorX < get_cur_file()[curCursorY].size()) {
+    if(curCursorX < get_line_len()) {
         curCursorX++;
     }
     savedCursorX = 0;
@@ -516,7 +524,7 @@ void backspace_key() {
         } else {
             if (curCursorY == 0) return;
             curCursorY--;
-            curCursorX = f[curCursorY].size();
+            curCursorX = get_line_len();
             f[curCursorY].append(f[curCursorY+1]);
             f.erase(f.begin() + curCursorY + 1);
         }
