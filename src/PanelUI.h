@@ -183,6 +183,7 @@ UI::Box* termBox;
 UI::Box* cams[8];
 UI::Box* terminals[4];
 B32 terminalActive;
+const F32 terminalTextHeight = 20.0F;
 
 void init() {
 	using namespace UI;
@@ -235,16 +236,15 @@ void init() {
 			comm.tessellator->ui_rect2d(comm.renderArea.minX, comm.renderArea.minY, comm.renderArea.maxX, comm.renderArea.maxY, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 0.0F, 0.0F, 0.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
 			if (terminalActive) {
 				file& file = get_terminal();
-				F32 textHeight = 20.0F;
-				I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / textHeight);
+				I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / terminalTextHeight);
 				I32 offset = get_offset(heightInChars);
 				for (U32 i = offset; i < min(offset + heightInChars, I32(file.size())); i++) {
-					TextRenderer::draw_string_batched(*comm.tessellator, StrA{ file[i].c_str(), file[i].length() }, comm.renderArea.minX, comm.renderArea.minY + F32(i - offset) * textHeight, comm.renderZ, textHeight, V4F32{ 0.7F, 0.7F, 0.7F, 1.0F }, comm.clipBoxIndex << 16);
+					TextRenderer::draw_string_batched(*comm.tessellator, StrA{ file[i].c_str(), file[i].length() }, comm.renderArea.minX, comm.renderArea.minY + F32(i - offset) * terminalTextHeight, comm.renderZ, terminalTextHeight, V4F32{ 0.7F, 0.7F, 0.7F, 1.0F }, comm.clipBoxIndex << 16);
 				}
 				if (U64(CyberSeaquell::totalTime * 2.0) & 1) {
-					F32 cursorX = comm.renderArea.minX + F32(cursor_x()) * TextRenderer::string_size_x("a"sa, textHeight);
-					F32 cursorY = comm.renderArea.minY + F32(cursor_y() - offset) * textHeight;
-					comm.tessellator->ui_rect2d(cursorX, cursorY, cursorX + 2.0F, cursorY + textHeight, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
+					F32 cursorX = comm.renderArea.minX + F32(cursor_x()) * TextRenderer::string_size_x("a"sa, terminalTextHeight);
+					F32 cursorY = comm.renderArea.minY + F32(cursor_y() - offset) * terminalTextHeight;
+					comm.tessellator->ui_rect2d(cursorX, cursorY, cursorX + 2.0F, cursorY + terminalTextHeight, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
 				}
 			}
 			return ACTION_HANDLED;
@@ -257,6 +257,11 @@ void init() {
 		}
 		if (terminalActive && comm.scrollInput) {
 			scroll_input(comm.scrollInput);
+			return ACTION_HANDLED;
+		}
+		if (terminalActive && comm.leftClicked) {
+			V2F32 mouseRelative = (comm.mousePos - box->computedOffset - box->contentOffset) / box->contentScale;
+			click_at(I32(mouseRelative.x / TextRenderer::string_size_x("a"sa, terminalTextHeight) + 0.5F), I32(mouseRelative.y / terminalTextHeight));
 			return ACTION_HANDLED;
 		}
 		return ACTION_PASS;

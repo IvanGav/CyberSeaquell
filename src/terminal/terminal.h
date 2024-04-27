@@ -78,6 +78,9 @@ bool type_char(Win32::Key char_code, char c) {
 
 //when a terminal is clicked, call this function with coordinates of the character that has been clicked
 void click_at(int x, int y) {
+    println_integer(x);
+    println_integer(y);
+    println();
     if(curFile != 0 || (y == curCursorY && x > 2)) {
         curCursorX = x;
         curCursorY = y;
