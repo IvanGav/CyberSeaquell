@@ -39,6 +39,8 @@ Texture camRed;
 Texture camBee;
 Texture terminal;
 Texture bee;
+Texture titleScreen;
+Texture notesToSelf;
 
 ArenaArrayList<Texture*> allTextures;
 ArenaArrayList<VkDeviceMemory> memoryUsed;
@@ -221,6 +223,8 @@ void load_all() {
 	load_png(&camBee, "resources/textures/camera-bee.png"sa);
 	load_png(&terminal, "resources/textures/terminal.png"sa);
 	load_png(&bee, "resources/textures/bee.png"sa);
+	load_png(&titleScreen, "resources/textures/atcomp-opener-blackred.png"sa);
+	load_png(&notesToSelf, "resources/textures/Personal_Diary.png"sa);
 	load_msdf(&fontAtlas, "resources/textures/font.ddf"sa);
 }
 
