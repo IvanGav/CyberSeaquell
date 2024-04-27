@@ -49,9 +49,6 @@ void mouse_callback(Win32::MouseButton button, Win32::MouseValue state) {
 }
 
 void do_frame() {
-	if (frameNumber % 200 == 0) {
-		Sounds::play_sound(Sounds::seagulls);
-	}
 	frameNumber++;
 	LARGE_INTEGER perfCounter;
 	if (!QueryPerformanceCounter(&perfCounter)) {
