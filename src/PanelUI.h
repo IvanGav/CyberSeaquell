@@ -177,6 +177,10 @@ void free_panel(Panel* panel) {
 	panelFreeList = panel;
 }
 
+UI::Box* termBox;
+UI::Box* cams[8];
+UI::Box* terminals[4];
+
 void init() {
 	using namespace UI;
 	Panel* panel = alloc_panel();
@@ -191,10 +195,31 @@ void init() {
 	panel->split(AXIS2_X);
 	panel = panel->parent;
 	UI_WORKING_BOX(panel->childA->content) {
-		UI_SIZE((V2F32{ 1920.0F, 1080.0F } * 0.5F))
-		UI_BACKGROUND_COLOR((V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }))
-		generic_box().unsafeBox->backgroundTexture = &Textures::map[0];
+		UI_FLAGS(defaultFlagsStack.back() | BOX_FLAG_FLOATING_X | BOX_FLAG_FLOATING_Y) {
+			UI_SIZE((V2F32{ 32.0F, 32.0F }))
+			UI_BACKGROUND_COLOR((V4F32{ 1.0F, 1.0F, 1.0F, 1.0F })) {
+				(cams[0] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 1000.0F } *0.5F;
+				(cams[1] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1500.0F, 762.0F } *0.5F;
+				(cams[2] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1108.0F, 542.0F } *0.5F;
+				(cams[3] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1104.0F, 295.0F } *0.5F;
+				(cams[4] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1510.0F, 160.0F } *0.5F;
+				(cams[5] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 1050.0F, 240.0F } *0.5F;
+				(cams[6] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 655.0F, 33.0F } *0.5F;
+				(cams[7] = button(Textures::camRed, [](Box* b) { b->backgroundTexture = &Textures::camBee; }).unsafeBox)->contentOffset = V2F32{ 758.0F, 379.0F } *0.5F;
+
+
+				(terminals[0] = button(Textures::terminal, [](Box* b) {  }).unsafeBox)->contentOffset = V2F32{ 1107.0F, 152.0F } *0.5F;
+				(terminals[1] = button(Textures::terminal, [](Box* b) {  }).unsafeBox)->contentOffset = V2F32{ 856.0F, 254.0F } *0.5F;
+				(terminals[2] = button(Textures::terminal, [](Box* b) {  }).unsafeBox)->contentOffset = V2F32{ 798.0F, 588.0F } *0.5F;
+				(terminals[3] = button(Textures::terminal, [](Box* b) {  }).unsafeBox)->contentOffset = V2F32{ 749.0F, 630.0F } *0.5F;
+			}
+			
+			UI_SIZE((V2F32{ 1920.0F, 1080.0F } *0.5F))
+			UI_BACKGROUND_COLOR((V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }))
+			generic_box().unsafeBox->backgroundTexture = &Textures::map[7];
+		}
 	}
+	termBox = panel->childB->content.unsafeBox;
 	panel->childB->content.unsafeBox->actionCallback = [](Box* box, UserCommunication& comm) {
 		Panel& panel = *reinterpret_cast<Panel*>(box->userData[0]);
 		if (comm.tessellator) {
