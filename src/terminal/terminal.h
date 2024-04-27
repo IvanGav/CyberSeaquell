@@ -313,6 +313,19 @@ void scroll_input(F32 scroll) {
     curOffset = clamp(curOffset - signumf32(scroll), 0, curCursorY);
 }
 
+bool disallow_bees() {
+    int i;
+    for (i = 0; i < (int)ts[curTerminal].names.size(); i++) {
+        if (strcmp(ts[curTerminal].names[i].c_str(), "laserPerms.JSON") == 0) {
+            for (int j = 0; j < (int)ts[curTerminal].files[i].size(); j++) {
+                if (strcmp(ts[curTerminal].files[i][j].substr(0, 14).c_str(), "disallow: bees"))
+                    return false;
+            }
+        }
+    }
+    return true;
+}
+
 /*
     Internal
 */
