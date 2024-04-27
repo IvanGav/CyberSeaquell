@@ -23,7 +23,7 @@ struct SeagullVirus {
 
 std::vector<uint32_t> compileProgram(const char* code);
 
-SeagullVirus virus;
+SeagullVirus virus {};
 
 uint32_t inputN;
 int atN;
