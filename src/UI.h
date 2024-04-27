@@ -892,7 +892,7 @@ BoxHandle text_input(StrA prompt, StrA defaultValue, BoxConsumer onTextUpdated =
 }
 BoxHandle button(Textures::Texture& tex, BoxConsumer onClick) {
 	BoxHandle box = generic_box();
-	box.unsafeBox->flags = BOX_FLAG_HIGHLIGHT_ON_USER_INTERACTION;
+	box.unsafeBox->flags |= BOX_FLAG_HIGHLIGHT_ON_USER_INTERACTION;
 	box.unsafeBox->backgroundTexture = &tex;
 	box.unsafeBox->hoverCursor = Win32::CURSOR_TYPE_HAND;
 	box.unsafeBox->userData[0] = reinterpret_cast<UPtr>(onClick);
@@ -909,7 +909,7 @@ BoxHandle button(Textures::Texture& tex, BoxConsumer onClick) {
 }
 BoxHandle text_button(StrA text, BoxConsumer onClick) {
 	BoxHandle box = generic_box();
-	box.unsafeBox->flags = BOX_FLAG_HIGHLIGHT_ON_USER_INTERACTION;
+	box.unsafeBox->flags |= BOX_FLAG_HIGHLIGHT_ON_USER_INTERACTION;
 	box.unsafeBox->text = text;
 	box.unsafeBox->hoverCursor = Win32::CURSOR_TYPE_HAND;
 	box.unsafeBox->userData[0] = reinterpret_cast<UPtr>(onClick);

@@ -1,10 +1,14 @@
 #pragma once
 #include "VK.h"
+#include "Win32.h"
 #include "DynamicVertexBuffer.h"
 #include "TextRenderer.h"
 #include "WASAPIInterface.h"
 #include "SerializeTools.h"
 #include "UI.h"
+#include "PanelUI.h"
+#include "stb_vorbis.h"
+
 
 namespace CyberSeaquell {
 
@@ -13,6 +17,40 @@ U64 prevFrameTime;
 U64 frameTime;
 F64 deltaTime;
 F64 totalTime;
+
+HANDLE audioThread;
+F64 audioPlaybackTime;
+B32 audioThreadShouldShutdown;
+
+F32* testAudio;
+U32 testAudioLength;
+
+void fill_audio_buffer(F32* buffer, U32 numSamples, U32 numChannels, F32 timeAmount) {
+	for (U32 i = 0; i < numSamples; i++) {
+		F64 t = audioPlaybackTime + F64(i) / F64(numSamples) * F64(timeAmount);
+		F32 val = testAudio[U32(t * 44100.0) % testAudioLength];
+		for (U32 j = 0; j < numChannels; j++) {
+			*buffer++ = val * 1.0F;
+		}
+	}
+	audioPlaybackTime += timeAmount;
+}
+
+DWORD WINAPI audio_thread_func(LPVOID) {
+	int channels, sampleRate;
+	short* output;
+	int dataLength = stb_vorbis_decode_filename("./resources/sounds/seagulls.ogg", &channels, &sampleRate, &output);
+	testAudioLength = dataLength;
+	testAudio = globalArena.alloc<F32>(dataLength);
+	for (U32 i = 0; i < dataLength; i++) {
+		testAudio[i] = F32(output[i * 2]) / 65535.0F;
+	}
+	WASAPIInterface::init_wasapi(fill_audio_buffer);
+	while (!audioThreadShouldShutdown) {
+		WASAPIInterface::do_audio();
+	}
+	return 0;
+}
 
 void keyboard_callback(Win32::Key key, Win32::ButtonState state) {
 	V2F32 mousePos = Win32::get_mouse();
@@ -87,6 +125,14 @@ void do_frame() {
 }
 
 void run_cyber_seaquell() {
+	audioThread = CreateThread(NULL, 64 * KILOBYTE, audio_thread_func, NULL, 0, NULL);
+	if (audioThread == NULL) {
+		DWORD err = GetLastError();
+		print("Failed to create audio thread, code: ");
+		println_integer(err);
+		return;
+	}
+
 	LARGE_INTEGER perfCounter;
 	if (!QueryPerformanceCounter(&perfCounter)) {
 		abort("Could not get performanceCounter");
@@ -107,6 +153,7 @@ void run_cyber_seaquell() {
 	}
 
 	UI::init_ui();
+	PanelUI::init();
 
 	Win32::show_window();
 
@@ -115,6 +162,15 @@ void run_cyber_seaquell() {
 		do_frame();
 	}
 
+	audioThreadShouldShutdown = true;
+	if (WaitForSingleObject(audioThread, INFINITE) == WAIT_FAILED) {
+		DWORD err = GetLastError();
+		print("Failed to join audio thread, code: ");
+		println_integer(err);
+	} else {
+		CloseHandle(audioThread);
+	}
+	CHK_VK(VK::vkDeviceWaitIdle(VK::logicalDevice));
 	UI::destroy_ui();
 	VK::end_vulkan();
 	Win32::destroy();
