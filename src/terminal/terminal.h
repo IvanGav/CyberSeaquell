@@ -85,7 +85,9 @@ void click_at(int x, int y) {
 int get_offset(int height) {
     if(curOffset == -1) {
         if(curFile == 0) {
-            curOffset = curCursorY;
+            curOffset = curCursorY-1;
+        } else {
+            curOffset = max(curCursorY-height+1, 0);
         }
     } else {
         if(curOffset < curCursorY && curCursorY < curOffset + height) {
