@@ -328,6 +328,13 @@ void create_file(std::string name) {
     ts[curTerminal].names.push_back(name);
 }
 
+void ask_security_question(int terminal) {
+    connectedCamNumber = terminal;
+    terminalMode = TerminalMode::Input;
+    get_cur_file().push_back("  Please enter the security question:");
+    get_cur_file().push_back("  Of the 1437 native bee species in the US, how many are declining in population?");
+}
+
 //given a command, interpret it
 bool interpret_command(std::string cmd) {
     int from = 0;
@@ -468,13 +475,6 @@ bool interpret_command(std::string cmd) {
     }
     newCmdLine();
     return false;
-}
-
-void ask_security_question(int terminal) {
-    connectedCamNumber = terminal;
-    terminalMode = TerminalMode::Input;
-    get_cur_file().push_back("  Please enter the security question:");
-    get_cur_file().push_back("  Of the 1437 native bee species in the US, how many are declining in population?");
 }
 
 std::string get_prompt() {
