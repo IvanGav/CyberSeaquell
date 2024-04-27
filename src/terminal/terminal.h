@@ -132,6 +132,18 @@ void terminals_init() {
     get_cur_file().push_back("first love: vending machine");
     get_cur_file().push_back("beavers: keystone species should be protected");
     get_cur_file().push_back("native US bees: endangered");
+    create_file("cryptoStats.txt");
+    curFile = 2;
+    get_cur_file()[0] = "If Bitcoin were a country, its energy consumption would";
+    get_cur_file().push_back("have ranked 27th in the world in 2020-2021, ahead of a country like Pakistan,");
+    get_cur_file().push_back("with a population of over 230 million people.");
+    get_cur_file().push_back("Equivalent to that of burning 84 billion pounds of coal");
+    get_cur_file().push_back("or operating 190 natural gas-fired power plants.");
+    get_cur_file().push_back("At the same time, Bitcoin used water equivalent to about");
+    get_cur_file().push_back("660,000 Olympic-sized swimming pools or enough to meet the");
+    get_cur_file().push_back("current domestic water needs of more than 300 million people");
+    get_cur_file().push_back("in rural sub-Saharan Africa");
+    get_cur_file().push_back("https://unu.edu/press-release/un-study-reveals-hidden-environmental-impacts-bitcoin-carbon-not-only-harmful-product");
 
     curFile = 0;
     curTerminal = 1;
@@ -146,7 +158,7 @@ void terminals_init() {
     get_cur_file().push_back("lscam");
     get_cur_file().push_back("connect camera (id of disabled camera)");
     get_cur_file().push_back("...then I just need to answer the security question");
-    get_cur_file().push_back("enable camera (id of disabled camera)");
+    get_cur_file().push_back("enable camera");
 
     curFile = 0;
     curTerminal = 2;
