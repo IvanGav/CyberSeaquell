@@ -2,11 +2,16 @@
 
 Functions that are needed to be called from the outside are under API comment section.
 
+Please call terminals_init once when the program starts.
+
 # Commands:
 
 help <-please>
 - print all commands
 - if please argument specified, better descriptions
+
+clear
+- clear the terminal text
 
 ls
 - print all files in current directory
@@ -17,5 +22,8 @@ cd dir
 pwd
 - print working directory
 
-neogull file
+zgull file
 - open file in a text editors
+
+exit
+- close the terminal
