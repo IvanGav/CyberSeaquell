@@ -157,7 +157,7 @@ void run_cyber_seaquell() {
 	} else {
 		CloseHandle(audioThread);
 	}
-
+	CHK_VK(VK::vkDeviceWaitIdle(VK::logicalDevice));
 	UI::destroy_ui();
 	VK::end_vulkan();
 	Win32::destroy();
