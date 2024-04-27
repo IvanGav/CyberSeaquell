@@ -193,7 +193,7 @@ void init() {
 	UI_WORKING_BOX(panel->childA->content) {
 		UI_SIZE((V2F32{ 1920.0F, 1080.0F } * 0.5F))
 		UI_BACKGROUND_COLOR((V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }))
-		generic_box().unsafeBox->backgroundTexture = &Textures::map;
+		generic_box().unsafeBox->backgroundTexture = &Textures::map[0];
 	}
 	panel->childB->content.unsafeBox->actionCallback = [](Box* box, UserCommunication& comm) {
 		Panel& panel = *reinterpret_cast<Panel*>(box->userData[0]);

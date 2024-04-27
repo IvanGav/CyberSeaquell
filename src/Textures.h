@@ -33,7 +33,8 @@ Texture simpleWhite;
 Texture fontAtlas;
 Texture uiIncrementLeft;
 Texture uiIncrementRight;
-Texture map;
+Texture map[8];
+Texture cam[1];
 
 ArenaArrayList<Texture*> allTextures;
 ArenaArrayList<VkDeviceMemory> memoryUsed;
@@ -190,7 +191,19 @@ void load_all() {
 	create_texture(&simpleWhite, hardcodedTextureData, 16, 16, TEXTURE_FORMAT_RGBA_U8, TEXTURE_TYPE_COLOR);
 	load_png(&uiIncrementLeft, "resources/textures/ui_increment_left.png"sa);
 	load_png(&uiIncrementRight, "resources/textures/ui_increment_right.png"sa);
-	load_png(&map, "resources/textures/new_map.png"sa);
+	load_png(&map[0], "resources/textures/map_mask_1.png"sa);
+	load_png(&map[1], "resources/textures/map_mask_2.png"sa);
+	load_png(&map[2], "resources/textures/map_mask_3.png"sa);
+	load_png(&map[3], "resources/textures/map_mask_4.png"sa);
+	load_png(&map[4], "resources/textures/map_mask_5.png"sa);
+	load_png(&map[5], "resources/textures/map_mask_6.png"sa);
+	load_png(&map[6], "resources/textures/map_mask_7.png"sa);
+	load_png(&map[7], "resources/textures/new_map.png"sa);
+	load_png(&cam[0], "resources/textures/cam1.png"sa);
+	load_png(&cam[1], "resources/textures/cam2.png"sa);
+	load_png(&cam[2], "resources/textures/cam3.png"sa);
+	load_png(&cam[3], "resources/textures/cam4.png"sa);
+	load_png(&cam[4], "resources/textures/cam5.png"sa);
 	load_msdf(&fontAtlas, "resources/textures/font.ddf"sa);
 }
 
