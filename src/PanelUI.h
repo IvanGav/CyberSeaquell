@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UI.h"
+#include "terminal/terminal.h"
 
 namespace PanelUI {
 struct Panel;

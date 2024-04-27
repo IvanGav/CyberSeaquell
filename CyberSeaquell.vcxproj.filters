@@ -89,6 +89,9 @@
     <ClInclude Include="src\stb_vorbis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\terminal\terminal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\SerializeToolsPowerOf5Table.txt" />

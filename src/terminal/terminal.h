@@ -10,6 +10,33 @@ struct Terminal {
     file history;
 };
 
+Terminal ts[4]; //terminals
+
+int curTerminal;
+int curFile;
+
+int curOffset; //will be -1 if none yet
+int curCursorX;
+int curCursorY;
+
+int savedCursorX;
+int editingHistory; //which item in terminal history is being edited; will be at most curCursorY
+
+file& get_cur_file();
+std::string get_prompt();
+void create_file(std::string name);
+int seek(std::string& str, int& from);
+void change_file(int file);
+void newCmdLine();
+void up_arrow();
+void down_arrow();
+void left_arrow();
+void right_arrow();
+void backspace_key();
+bool enter_key();
+void insert_char(char c);
+bool interpret_typed_character(Win32::Key charCode, char c);
+
 /*
     API
 */
@@ -112,18 +139,6 @@ void terminals_init() {
 /*
     Internal
 */
-
-Terminal ts[4]; //terminals
-
-int curTerminal;
-int curFile;
-
-int curOffset; //will be -1 if none yet
-int curCursorX;
-int curCursorY;
-
-int savedCursorX;
-int editingHistory; //which item in terminal history is being edited; will be at most curCursorY
 
 void create_file(std::string name) {
     std::vector<std::string> f;
