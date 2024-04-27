@@ -2,6 +2,7 @@
 #include "DrillLib.h"
 #include "CyberSeaquell_decl.h"
 #include "stb_vorbis.h"
+#include <vector>
 
 namespace Sounds {
 
@@ -39,14 +40,31 @@ AudioSource bees;
 AudioSource clickPen;
 AudioSource seagulls;
 AudioSource bg;
+AudioSource key1;
+AudioSource key2;
+AudioSource key3;
+AudioSource key4;
+AudioSource key5;
+AudioSource key6;
+AudioSource key7;
+
+std::vector<AudioSource*> keyboard = { &key1,&key2,&key3,&key4,&key5,&key6,&key7 };
+
 
 void load_sources() {
 	load_source(&bees, "./resources/sounds/bees-swarming.ogg");
 	load_source(&clickPen, "./resources/sounds/click-pen.ogg");
 	load_source(&seagulls, "./resources/sounds/seagulls.ogg");
 	load_source(&bg, "./resources/sounds/bg.ogg");
-
+	load_source(&key1, "./resources/sounds/keyboard-typing-sound-effect-2.ogg");
+	load_source(&key2, "./resources/sounds/keyboard-typing-sound-effect-3.ogg");
+	load_source(&key3, "./resources/sounds/keyboard-typing-sound-effect-4.ogg");
+	load_source(&key4, "./resources/sounds/keyboard-typing-sound-effect-5.ogg");
+	load_source(&key5, "./resources/sounds/keyboard-typing-sound-effect-6.ogg");
+	load_source(&key6, "./resources/sounds/keyboard-typing-sound-effect-7.ogg");
+	load_source(&key7, "./resources/sounds/keyboard-typing-sound-effect-8.ogg");
 }
+
 
 void play_sound(AudioSource& src) {
 	instances.push_back(AudioInstance{ &src, CyberSeaquell::audioPlaybackTime });
