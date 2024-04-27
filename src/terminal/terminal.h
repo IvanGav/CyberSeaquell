@@ -1,6 +1,9 @@
+#pragma once
+
 #include <string>
 #include <vector>
 #include "../Win32.h"
+#include "interpreter.h"
 
 //TODO: ignore leading spaces
 
@@ -373,6 +376,12 @@ bool interpret_command(std::string cmd) {
 
                 f.push_back("  zgull <file>");
 
+                f.push_back("  exec <code_file> <log_file>");
+
+                f.push_back("  exec kill");
+
+                f.push_back("  exec active");
+
                 f.push_back("  lscam");
 
                 f.push_back("  connect camera <cameraID>");
@@ -401,6 +410,15 @@ bool interpret_command(std::string cmd) {
                 f.push_back("  zgull <file>");
                 f.push_back("    open a given file in zgull, the best text editor");
 
+                f.push_back("  exec <code_file> <log_file>");
+                f.push_back("    compile and execute a program in code_file, which will log (if any) to log_file");
+
+                f.push_back("  exec kill");
+                f.push_back("    kill an active program, if it's active");
+
+                f.push_back("  exec active");
+                f.push_back("    print information about a process that's currently being executed, if any");
+
                 f.push_back("  lscam");
                 f.push_back("   list all available cameras");
 
@@ -409,6 +427,46 @@ bool interpret_command(std::string cmd) {
 
                 f.push_back("  c> enable camera");
                 f.push_back("    when connected to a camera, enable it (if it's currently disabled)");
+            }
+        }
+        else if ("exec"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            int argSize; int argFrom = seek(cmd, from, argSize);
+            if ("active"sa == StrA{ cmd.c_str() + argFrom, U64(argSize) }) {
+                if (virus.active) {
+                    get_cur_file().push_back("  A process is currently active. To stop, enter 'exec kill'.");
+                } else if (virus.passed) {
+                    get_cur_file().push_back("  A process has exited successfully and there are no active processes.");
+                } else {
+                    get_cur_file().push_back("  A process has failed. There are no active processes.");
+                }
+            } else if ("kill"sa == StrA{ cmd.c_str() + argFrom, U64(argSize) }) {
+                if (virus.active) {
+                    virus.active = false;
+                    get_cur_file().push_back("  A process has been stopped.");
+                } else {
+                    get_cur_file().push_back("  No active processes.");
+                }
+            } else {
+                //assume that a file name is given
+                file* code = nullptr;
+                for (int i = 0; i < ts[curTerminal].names.size(); i++) {
+                    if (strncmp(ts[curTerminal].names[i].c_str(), cmd.c_str() + argFrom, argSize) == 0) {
+                        code = &ts[curTerminal].files[i];
+                        break;
+                    }
+                }
+                int argFrom = seek(cmd, from, argSize);
+                file* log = nullptr;
+                for (int i = 0; i < ts[curTerminal].names.size(); i++) {
+                    if (strncmp(ts[curTerminal].names[i].c_str(), cmd.c_str() + argFrom, argSize) == 0) {
+                        log = &ts[curTerminal].files[i];
+                        break;
+                    }
+                }
+                if (code == nullptr || log == nullptr) {
+                    get_cur_file().push_back("  At least one of given files is invalid");
+                }
+                compileAndLoad(code, log);
             }
         }
         else if ("clear"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {

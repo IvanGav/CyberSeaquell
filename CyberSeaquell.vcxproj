@@ -184,6 +184,7 @@
     <ClInclude Include="src\DrillMath.h" />
     <ClInclude Include="src\DynamicVertexBuffer.h" />
     <ClInclude Include="src\DynamicVertexBuffer_decl.h" />
+    <ClInclude Include="src\terminal\interpreter.h" />
     <ClInclude Include="src\PanelUI.h" />
     <ClInclude Include="src\PNG.h" />
     <ClInclude Include="src\SerializeTools.h" />
