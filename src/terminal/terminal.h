@@ -48,6 +48,8 @@ void open_terminal(int terminal) {
     curCursorX = 2;
     curCursorY = get_cur_file().size()-1;
     curOffset = -1;
+    savedCursorX = 0;
+    newCmdLine();
 }
 
 //get a pointer to a vector of strings to draw
