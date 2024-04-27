@@ -2,11 +2,6 @@
 
 Functions that are needed to be called from the outside are under API comment section.
 
-- When a terminal is opened, indicate which terminal is opened by calling open_terminal.
-- To get the prompt to print out, use get_prompt.
-- To execute a command, use interpret_command.
-- Editor commands have experimental signitures. THEY WILL CHANGE.
-
 # Commands:
 
 help <-please>
@@ -18,6 +13,9 @@ ls
 
 cd dir
 - change directory to dir
+
+pwd
+- print working directory
 
 neogull file
 - open file in a text editors
