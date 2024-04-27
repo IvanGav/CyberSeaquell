@@ -95,7 +95,7 @@ int get_offset(int height) {
         } else if(curCursorY >= curOffset + height) {
             curOffset = max(0, curCursorY - height + 1);
         } else {
-            //shouldn't happen, do nothing
+            curOffset = curCursorY;
         }
     }
     return curOffset;
@@ -154,31 +154,30 @@ void create_file(std::string name) {
 //given a command, interpret it
 bool interpret_command(std::string cmd) {
     int from = 0;
-    int cmdsize = seek(cmd, from);
+    int cmdsize;
+    seek(cmd, from, cmdsize);
     if(strncmp("help", cmd.c_str(), cmdsize)) {
         // int argSize = seek(cmd, from);
         // if(strncmp("-please", cmd.c_str(), cmdsize))
         file& f = get_cur_file();
 
-        f.push_back("help <-please>");
-        f.push_back("  see this message");
+        f.push_back("  help <-please>");
+        f.push_back("    see this message");
 
-        f.push_back("clear");
-        f.push_back("  clear all previous commands from the screen");
+        f.push_back("  clear");
+        f.push_back("    clear all previous commands from the screen");
 
-        f.push_back("ls <dir>");
-        f.push_back("  list all files in a specified directory (this directory if not specified)");
+        f.push_back("  ls <dir>");
+        f.push_back("    list all files in a specified directory (this directory if not specified)");
 
-        f.push_back("cd dir");
-        f.push_back("  change directory to a specified directory");
+        f.push_back("  cd dir");
+        f.push_back("    change directory to a specified directory");
 
-        f.push_back("pwd");
-        f.push_back("  print working directory");
+        f.push_back("  pwd");
+        f.push_back("    print working directory");
 
-        f.push_back("zgull file");
-        f.push_back("  open a given file in zgull");
-
-        f.push_back(get_prompt());
+        f.push_back("  zgull file");
+        f.push_back("    open a given file in zgull");
     } else if(strncmp("clear", cmd.c_str(), cmdsize)) {
         get_cur_file().clear();
     } else if(strncmp("ls", cmd.c_str(), cmdsize)) {
@@ -191,9 +190,9 @@ bool interpret_command(std::string cmd) {
     //     int argSize = seek(cmd, from);
     //     if(strncmp(".", cmd.c_str(), cmdsize));
     } else if(strncmp("pwd", cmd.c_str(), cmdsize)) {
-        get_cur_file().push_back("C:/cryptocom/central facility/ehtp1nfo34-terminal" + std::to_string(curTerminal));
+        get_cur_file().push_back("  C:/cryptocom/central facility/ehtp1nfo34-terminal" + std::to_string(curTerminal));
     } else if(strncmp("zgull", cmd.c_str(), cmdsize)) {
-        int argSize = seek(cmd, from);
+        int argSize; seek(cmd, from, argSize);
         for(int i = 1; i < ts[curTerminal].files.size(); i++) {
             if(strncmp(ts[curTerminal].names[i].c_str(), cmd.c_str()+cmdsize+1, argSize)) {
                 //open a file i
@@ -232,15 +231,16 @@ file& get_cur_file() {
     return ts[curTerminal].files[curFile];
 }
 
-//return how many characters were "read" until next space
-int seek(std::string& str, int& from) {
-    int len = 0;
+//set 'len' to how many characters were "read" until next space; return original 'from' value
+int seek(std::string& str, int& from, int& len) {
+    int from_old = from;
+    len = 0;
     while(from < str.size() && str[from] != ' ') { 
         from++;
         len++;
     }
     from++;
-    return len;
+    return from_old;
 }
 
 //return true if cursor is currently the rightmost of the line
@@ -375,7 +375,7 @@ void backspace_key() {
     if(curFile == 0) {
         //terminal
         file& f = get_cur_file();
-        if(curCursorX > 2) {
+        if(curCursorX >= 2) {
             ts[curTerminal].history[editingHistory].erase(curCursorX-2, 1);
             left_arrow();
         }
