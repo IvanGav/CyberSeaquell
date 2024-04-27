@@ -35,6 +35,9 @@ Texture uiIncrementLeft;
 Texture uiIncrementRight;
 Texture map[8];
 Texture cam[5];
+Texture camRed;
+Texture camBee;
+Texture terminal;
 
 ArenaArrayList<Texture*> allTextures;
 ArenaArrayList<VkDeviceMemory> memoryUsed;
@@ -204,6 +207,9 @@ void load_all() {
 	load_png(&cam[2], "resources/textures/cam3.png"sa);
 	load_png(&cam[3], "resources/textures/cam4.png"sa);
 	load_png(&cam[4], "resources/textures/cam5.png"sa);
+	load_png(&camRed, "resources/textures/camera-red.png"sa);
+	load_png(&camBee, "resources/textures/camera-bee.png"sa);
+	load_png(&terminal, "resources/textures/terminal.png"sa);
 	load_msdf(&fontAtlas, "resources/textures/font.ddf"sa);
 }
 

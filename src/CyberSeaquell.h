@@ -30,7 +30,7 @@ void fill_audio_buffer(F32* buffer, U32 numSamples, U32 numChannels, F32 timeAmo
 		F64 t = audioPlaybackTime + F64(i) / F64(numSamples) * F64(timeAmount);
 		F32 val = testAudio[U32(t * 44100.0) % testAudioLength];
 		for (U32 j = 0; j < numChannels; j++) {
-			*buffer++ = val * 0.9F;
+			*buffer++ = val * 1.0F;
 		}
 	}
 	audioPlaybackTime += timeAmount;
