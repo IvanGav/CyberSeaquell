@@ -2,6 +2,7 @@
 
 #include "UI.h"
 #include "terminal/terminal.h"
+#include "CyberSeaquell_decl.h"
 
 namespace PanelUI {
 struct Panel;
@@ -220,12 +221,29 @@ void init() {
 			generic_box().unsafeBox->backgroundTexture = &Textures::map[7];
 		}
 	}
+	terminals_init();
+	open_terminal(0);
 	termBox = panel->childB->content.unsafeBox;
 	panel->childB->content.unsafeBox->actionCallback = [](Box* box, UserCommunication& comm) {
 		Panel& panel = *reinterpret_cast<Panel*>(box->userData[0]);
 		if (comm.tessellator) {
 			comm.tessellator->ui_rect2d(comm.renderArea.minX, comm.renderArea.minY, comm.renderArea.maxX, comm.renderArea.maxY, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 0.0F, 0.0F, 0.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
-			TextRenderer::draw_string_batched(*comm.tessellator, ">Ducks are nice"sa, comm.renderArea.minX, comm.renderArea.minY, comm.renderZ, 20.0F, V4F32{ 0.7F, 0.7F, 0.7F, 1.0F }, comm.clipBoxIndex << 16);
+			file& file = get_terminal();
+			F32 textHeight = 20.0F;
+			I32 heightInChars = I32((comm.renderArea.maxY - comm.renderArea.minY) / textHeight);
+			I32 offset = get_offset(heightInChars);
+			for (U32 i = offset; i < min(offset + heightInChars, I32(file.size())); i++) {
+				TextRenderer::draw_string_batched(*comm.tessellator, StrA{ file[i].c_str(), file[i].length() }, comm.renderArea.minX, comm.renderArea.minY + F32(i - offset) * textHeight, comm.renderZ, textHeight, V4F32{0.7F, 0.7F, 0.7F, 1.0F}, comm.clipBoxIndex << 16);
+			}
+			if (U64(CyberSeaquell::totalTime * 2.0) & 1) {
+				F32 cursorX = comm.renderArea.minX + F32(cursor_x()) * TextRenderer::string_size_x("a"sa, textHeight);
+				F32 cursorY = comm.renderArea.minY + F32(cursor_y()) * textHeight;
+				comm.tessellator->ui_rect2d(cursorX, cursorY, cursorX + 2.0F, cursorY + textHeight, comm.renderZ, 0.0F, 0.0F, 1.0F, 1.0F, V4F32{ 1.0F, 1.0F, 1.0F, 1.0F }, Textures::simpleWhite.index, comm.clipBoxIndex << 16);
+			}
+			return ACTION_HANDLED;
+		}
+		if (comm.keyPressed) {
+			type_char(comm.keyPressed, comm.charTyped);
 			return ACTION_HANDLED;
 		}
 		return ACTION_PASS;

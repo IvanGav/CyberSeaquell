@@ -25,7 +25,7 @@ int editingHistory; //which item in terminal history is being edited; will be at
 file& get_cur_file();
 std::string get_prompt();
 void create_file(std::string name);
-int seek(std::string& str, int& from);
+int seek(std::string& str, int& from, int& len);
 void change_file(int file);
 void newCmdLine();
 void up_arrow();

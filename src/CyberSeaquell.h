@@ -1,4 +1,5 @@
 #pragma once
+#include "CyberSeaquell_decl.h"
 #include "VK.h"
 #include "Win32.h"
 #include "DynamicVertexBuffer.h"
