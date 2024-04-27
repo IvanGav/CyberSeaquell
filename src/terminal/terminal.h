@@ -50,6 +50,7 @@ bool enter_key();
 void insert_char(char c);
 bool interpret_typed_character(Win32::Key charCode, char c);
 int get_line_len();
+void ask_security_question(int terminal);
 
 /*
     API
@@ -333,138 +334,186 @@ bool interpret_command(std::string cmd) {
     int from = 0;
     int cmdsize;
     seek(cmd, from, cmdsize);
-    if ("help"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-        file& f = get_cur_file();
-        int argSize; int argAt = seek(cmd, from, argSize);
-        if ("-please"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-            f.push_back("  help [-please]");
+    if (terminalMode == TerminalMode::Normal) {
+        if ("help"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            file& f = get_cur_file();
+            int argSize; int argAt = seek(cmd, from, argSize);
+            if ("-please"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+                f.push_back("  help [-please]");
 
-            f.push_back("  exit");
+                f.push_back("  exit");
 
-            f.push_back("  clear");
+                f.push_back("  clear");
 
-            f.push_back("  ls [dir]");
+                f.push_back("  ls [dir]");
 
-            f.push_back("  cd <dir>");
+                f.push_back("  cd <dir>");
 
-            f.push_back("  pwd");
+                f.push_back("  pwd");
 
-            f.push_back("  zgull <file>");
+                f.push_back("  zgull <file>");
 
-            f.push_back("  lscam");
+                f.push_back("  lscam");
 
-            f.push_back("  connect camera <cameraID>");
+                f.push_back("  connect camera <cameraID>");
 
-            f.push_back("  c> enable camera");
-        } else {
-            f.push_back("  help [-please]");
-            f.push_back("    see this message");
+                f.push_back("  c> enable camera");
+            }
+            else {
+                f.push_back("  help [-please]");
+                f.push_back("    see this message");
 
-            f.push_back("  exit");
-            f.push_back("    terminate current terminal session");
+                f.push_back("  exit");
+                f.push_back("    terminate current terminal session");
 
-            f.push_back("  clear");
-            f.push_back("    clear all previous commands from the screen");
+                f.push_back("  clear");
+                f.push_back("    clear all previous commands from the screen");
 
-            f.push_back("  ls [dir]");
-            f.push_back("    list all files in a specified directory (this directory if not specified)");
+                f.push_back("  ls [dir]");
+                f.push_back("    list all files in a specified directory (this directory if not specified)");
 
-            f.push_back("  cd <dir>");
-            f.push_back("    change directory to a specified directory");
+                f.push_back("  cd <dir>");
+                f.push_back("    change directory to a specified directory");
 
-            f.push_back("  pwd");
-            f.push_back("    print working directory");
+                f.push_back("  pwd");
+                f.push_back("    print working directory");
 
-            f.push_back("  zgull <file>");
-            f.push_back("    open a given file in zgull, the best text editor");
+                f.push_back("  zgull <file>");
+                f.push_back("    open a given file in zgull, the best text editor");
 
-            f.push_back("  lscam");
-            f.push_back("   list all available cameras");
+                f.push_back("  lscam");
+                f.push_back("   list all available cameras");
 
-            f.push_back("  connect camera <cameraID>");
-            f.push_back("   securely connect to a camera to change its settings");
+                f.push_back("  connect camera <cameraID>");
+                f.push_back("   securely connect to a camera to change its settings");
 
-            f.push_back("  c> enable camera");
-            f.push_back("    when connected to a camera, enable it (if it's currently disabled)");
-        }
-    } else if ("clear"sa == StrA{ cmd.c_str(), U64(cmdsize) } ) {
-        get_cur_file().clear();
-    }
-    else if ("ls"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-        get_cur_file().push_back("  .");
-        get_cur_file().push_back("  ..");
-        for (int i = 1; i < ts[curTerminal].files.size(); i++) {
-            get_cur_file().push_back("  " + ts[curTerminal].names[i]);
-        }
-    } else if ("cd"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-        int argSize; int startAt = seek(cmd, from, argSize);
-        if (cmd[startAt] == '.' && cmd.size() == 1);
-        else {
-            get_cur_file().push_back("  ERROR: Permussion denied");
-        }
-    } else if ("pwd"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-        get_cur_file().push_back("  C:/cryptocom/central facility/ehtp1nfo34-terminal" + std::to_string(curTerminal));
-    } else if ("zgull"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-        int argSize; int argFrom = seek(cmd, from, argSize);
-        for(int i = 1; i < ts[curTerminal].files.size(); i++) {
-            if (StrA{ ts[curTerminal].names[i].c_str(), ts[curTerminal].names[i].size() } == StrA{ cmd.c_str() + argFrom, U64(argSize) }) {
-                //open a file i
-                newCmdLine();
-                change_file(i);
-                return false;
+                f.push_back("  c> enable camera");
+                f.push_back("    when connected to a camera, enable it (if it's currently disabled)");
             }
         }
-        //print error
-        get_cur_file().push_back("  ERROR: file not found");
-    } else if ("exit"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-        return true;
-    } else if ("lscam"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-        file& f = get_cur_file();
-        f.push_back("  Available cameras (name, id, status)");
-        f.push_back("  aim-1050     0   online");
-        f.push_back("  anticoin5    1   online");
-        f.push_back("  riista-11    2   online");
-        f.push_back("  abx-03c      3   online");
-        f.push_back("  abx-03c      4   online");
-        f.push_back("  abx-03b      5   online");
-        f.push_back("  abx12        6   " + t2_cam_enabled ? "online" : "offline");
-        f.push_back("  cryptocam    7   online");
-        f.push_back("  ccam3        8   online");
-        f.push_back("  Total: 9     Online: " + t2_cam_enabled ? "9" : "8");
-    } else if ("connect"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
-        int argSize; int argFrom = seek(cmd, from, argSize);
-        if("camera"sa == StrA{ cmd.c_str()+argFrom, U64(argSize) }) {
-            argFrom = seek(cmd, from, argSize);
-            if (argSize == 1) {
-                if (cmd[argFrom] == '0') {
-                    ask_security_question(0);
-                } else if (cmd[argFrom] == '1') {
-                    ask_security_question(1);
-                } else if (cmd[argFrom] == '2') {
-                    ask_security_question(2);
-                } else if (cmd[argFrom] == '3') {
-                    ask_security_question(3);
-                } else if (cmd[argFrom] == '4') {
-                    ask_security_question(4);
-                } else if (cmd[argFrom] == '5') {
-                    ask_security_question(5);
-                } else if (cmd[argFrom] == '6') {
-                    ask_security_question(6);
-                } else if (cmd[argFrom] == '7') {
-                    ask_security_question(7);
-                } else if (cmd[argFrom] == '8') {
-                    ask_security_question(8);
-                } else {
+        else if ("clear"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            get_cur_file().clear();
+        }
+        else if ("ls"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            get_cur_file().push_back("  .");
+            get_cur_file().push_back("  ..");
+            for (int i = 1; i < ts[curTerminal].files.size(); i++) {
+                get_cur_file().push_back("  " + ts[curTerminal].names[i]);
+            }
+        }
+        else if ("cd"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            int argSize; int startAt = seek(cmd, from, argSize);
+            if (cmd[startAt] == '.' && cmd.size() == 1);
+            else {
+                get_cur_file().push_back("  ERROR: Permussion denied");
+            }
+        }
+        else if ("pwd"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            get_cur_file().push_back("  C:/cryptocom/central facility/ehtp1nfo34-terminal" + std::to_string(curTerminal));
+        }
+        else if ("zgull"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            int argSize; int argFrom = seek(cmd, from, argSize);
+            for (int i = 1; i < ts[curTerminal].files.size(); i++) {
+                if (StrA{ ts[curTerminal].names[i].c_str(), ts[curTerminal].names[i].size() } == StrA{ cmd.c_str() + argFrom, U64(argSize) }) {
+                    //open a file i
+                    newCmdLine();
+                    change_file(i);
+                    return false;
+                }
+            }
+            //print error
+            get_cur_file().push_back("  ERROR: file not found");
+        }
+        else if ("exit"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            return true;
+        }
+        else if ("lscam"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            file& f = get_cur_file();
+            f.push_back("  Available cameras (name, id, status)");
+            f.push_back("  aim-1050     0   online");
+            f.push_back("  anticoin5    1   online");
+            f.push_back("  riista-11    2   online");
+            f.push_back("  abx-03c      3   online");
+            f.push_back("  abx-03c      4   online");
+            f.push_back("  abx-03b      5   online");
+            f.push_back(std::string("  abx12        6   ") + (t2_cam_enabled ? "online" : "offline"));
+            f.push_back("  cryptocam    7   online");
+            f.push_back("  ccam3        8   online");
+            f.push_back(std::string("  Total: 9     Online: ") + (t2_cam_enabled ? "9" : "8"));
+        }
+        else if ("connect"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            int argSize; int argFrom = seek(cmd, from, argSize);
+            if ("camera"sa == StrA{ cmd.c_str() + argFrom, U64(argSize) }) {
+                argFrom = seek(cmd, from, argSize);
+                if (argSize == 1) {
+                    if (cmd[argFrom] == '0') {
+                        ask_security_question(0);
+                    }
+                    else if (cmd[argFrom] == '1') {
+                        ask_security_question(1);
+                    }
+                    else if (cmd[argFrom] == '2') {
+                        ask_security_question(2);
+                    }
+                    else if (cmd[argFrom] == '3') {
+                        ask_security_question(3);
+                    }
+                    else if (cmd[argFrom] == '4') {
+                        ask_security_question(4);
+                    }
+                    else if (cmd[argFrom] == '5') {
+                        ask_security_question(5);
+                    }
+                    else if (cmd[argFrom] == '6') {
+                        ask_security_question(6);
+                    }
+                    else if (cmd[argFrom] == '7') {
+                        ask_security_question(7);
+                    }
+                    else if (cmd[argFrom] == '8') {
+                        ask_security_question(8);
+                    }
+                    else {
+                        get_cur_file().push_back("  ERROR: camera doesn't exist");
+                    }
+                }
+                else {
                     get_cur_file().push_back("  ERROR: camera doesn't exist");
                 }
-            } else {
-                get_cur_file().push_back("  ERROR: camera doesn't exist");
             }
-        } else {
-            get_cur_file().push_back("  ERROR: not a destination");
+            else {
+                get_cur_file().push_back("  ERROR: not a destination");
+            }
         }
-    } else {
-        get_cur_file().push_back("  ERROR: command not recognized");
+        else {
+            get_cur_file().push_back("  ERROR: command not recognized");
+        }
+    } else if (terminalMode == TerminalMode::Input) {
+        if ("749"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            get_cur_file().push_back("  Connected to camera " + std::to_string(connectedCamNumber));
+            terminalMode = TerminalMode::Camera;
+        }
+        else {
+            get_cur_file().push_back("  Incorrect, aborting");
+            terminalMode = TerminalMode::Normal;
+        }
+    } else if (terminalMode == TerminalMode::Camera) {
+        if ("help"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            get_cur_file().push_back("  help");
+            get_cur_file().push_back("  exit");
+            get_cur_file().push_back("  enable camera");
+        }
+        else if ("exit"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            terminalMode = TerminalMode::Normal;
+        }
+        else if ("enable"sa == StrA{ cmd.c_str(), U64(cmdsize) }) {
+            int argSize; int argFrom = seek(cmd, from, argSize);
+            if ("camera"sa == StrA{ cmd.c_str() + argFrom, U64(argSize) }) {
+                get_cur_file().push_back("  Please wait...");
+                get_cur_file().push_back("  Enabled camera " + std::to_string(connectedCamNumber));
+                t2_cam_enabled = true;
+            }
+        }
     }
     newCmdLine();
     return false;
@@ -483,7 +532,7 @@ std::string get_prompt() {
     else if (terminalMode == TerminalMode::Input)
         return ": ";
     else
-        return connectedCamNumber + ">";
+        return std::to_string(connectedCamNumber) + ">";
 }
 
 void change_file(int file) {
